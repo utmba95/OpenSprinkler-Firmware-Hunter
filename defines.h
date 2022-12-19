@@ -405,17 +405,20 @@ enum {
 	/* Original OS30 pin defines */
 	//#define V0_MAIN_INPUTMASK 0b00001010 // main input pin mask
 	// pins on main PCF8574 IO expander have pin numbers IOEXP_PIN+i
-	#define V0_PIN_BUTTON_1      IOEXP_PIN+1 // button 1
-	#define V0_PIN_BUTTON_2      0           // button 2
-	#define V0_PIN_BUTTON_3      IOEXP_PIN+3 // button 3
-	#define V0_PIN_RFRX          14
+	// *** Hunter using these pins
+	#define V0_PIN_BUTTON_1      2           // button 1 = D4
+	#define V0_PIN_BUTTON_2      0           // button 2 = D3
+	#define V0_PIN_BUTTON_3      12          // button 3 = D6
+	#define V0_PIN_RFRX          IOEXP_PIN+1
 	#define V0_PIN_PWR_RX        IOEXP_PIN+0
-	#define V0_PIN_RFTX          16
+	#define V0_PIN_RFTX          IOEXP_PIN+3
 	#define V0_PIN_PWR_TX        IOEXP_PIN+2
 	#define V0_PIN_BOOST         IOEXP_PIN+6
 	#define V0_PIN_BOOST_EN      IOEXP_PIN+7
-	#define V0_PIN_SENSOR1       12 // sensor 1
-	#define V0_PIN_SENSOR2       13 // sensor 2
+	#define V0_PIN_SENSOR1       14 // sensor 1 = D5
+	#define V0_PIN_SENSOR2       13 // sensor 2 = D7  need to change to A0
+	#define HUNTER_PIN  		 16 // XXX D0
+
 
 	/* OS31 pin defines */
 	// pins on PCA9555A IO expander have pin numbers IOEXP_PIN+i

@@ -125,7 +125,8 @@ void PCF8575::i2c_write(uint8_t reg, uint16_t v) {
 }
 
 uint16_t PCF8574::i2c_read(uint8_t reg) {
-	if(address==255)	return 0xFFFF;
+	// if(address==255)	return 0xFFFF;
+	if(1)	return 0xFFFF;
 	Wire.beginTransmission(address);
 	if(Wire.requestFrom(address, (uint8_t)1) != 1) return 0xFFFF;
 	uint16_t data = Wire.read();
@@ -134,7 +135,8 @@ uint16_t PCF8574::i2c_read(uint8_t reg) {
 }
 
 void PCF8574::i2c_write(uint8_t reg, uint16_t v) {
-	if(address==255)	return;
+	// if(address==255)	return;
+	if(1)	return;
 	Wire.beginTransmission(address);
 	Wire.write((uint8_t)(v&0xFF) | inputmask);
 	Wire.endTransmission();
@@ -147,7 +149,7 @@ extern OpenSprinkler os;
 void pinModeExt(unsigned char pin, unsigned char mode) {
 	if(pin==255) return;
 	if(pin>=IOEXP_PIN) {
-		os.mainio->pinMode(pin-IOEXP_PIN, mode);
+		//os.mainio->pinMode(pin-IOEXP_PIN, mode);
 	} else {
 		pinMode(pin, mode);
 	}
@@ -166,7 +168,8 @@ void digitalWriteExt(unsigned char pin, unsigned char value) {
 unsigned char digitalReadExt(unsigned char pin) {
 	if(pin==255) return HIGH;
 	if(pin>=IOEXP_PIN) {
-		return os.mainio->digitalRead(pin-IOEXP_PIN);
+		//return os.mainio->digitalRead(pin-IOEXP_PIN);
+		return 1;
 		// a pin on IO expander
 		//return pcf_read(MAIN_I2CADDR)&(1<<(pin-IOEXP_PIN));
 	} else {

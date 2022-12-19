@@ -856,7 +856,8 @@ void OpenSprinkler::begin() {
 #if defined(ESP8266) // ESP8266 specific initializations
 
 	/* detect hardware revision type */
-	if(detect_i2c(MAIN_I2CADDR)) {	// check if main PCF8574 exists
+	//if(detect_i2c(MAIN_I2CADDR)) {	// check if main PCF8574 exists
+	if(1){
 		/* assign revision 0 pins */
 		PIN_BUTTON_1 = V0_PIN_BUTTON_1;
 		PIN_BUTTON_2 = V0_PIN_BUTTON_2;
@@ -869,7 +870,8 @@ void OpenSprinkler::begin() {
 		PIN_SENSOR2 = V0_PIN_SENSOR2;
 
 		/* check hardware type */
-		if(detect_i2c(ACDR_I2CADDR)) {
+		//if(detect_i2c(ACDR_I2CADDR)) {
+		if(1){
 			hw_type = HW_TYPE_AC;
 			drio = new PCF8574(ACDR_I2CADDR);
 		} else if(detect_i2c(DCDR_I2CADDR)) {
@@ -1029,7 +1031,8 @@ pinModeExt(PIN_BUTTON_3, INPUT_PULLUP);
 	// OS 3.0 has two independent sensors
 	pinModeExt(PIN_SENSOR1, INPUT_PULLUP);
 	pinModeExt(PIN_SENSOR2, INPUT_PULLUP);
-
+	pinModeExt(HUNTER_PIN, OUTPUT);
+	
 #else
 	// pull shift register OE low to enable output
 	digitalWrite(PIN_SR_OE, LOW);
@@ -1157,7 +1160,11 @@ pinModeExt(PIN_BUTTON_3, INPUT_PULLUP);
 	pinModeExt(PIN_BUTTON_3, INPUT_PULLUP);
 
 	// detect and check RTC type
-	RTC.detect();
+	if (RTC.detect()) {
+		DEBUG_PRINTLN("RTC detected");
+	} else {
+		DEBUG_PRINTLN("RTC not detected");
+	}
 
 #else
 	//DEBUG_PRINTLN(get_runtime_path());

@@ -21,7 +21,7 @@ public:
       custom_chars[i] = NULL;
   }
   void begin() {
-    Wire.setClock(400000L); // lower clock to 400kHz
+    Wire.setClock(100000L); // lower clock to 100kHz for DS1307 RTC
     flipScreenVertically();
     setFont(Monospaced_plain_13);
     fontWidth = 8;
@@ -273,7 +273,7 @@ public:
 
     ssd1306_command(SSD1306_SET_COLUMN_ADDR);
     ssd1306_command(0x00); // Column start address (0 = reset)
-	ssd1306_command(width - 1); // Column end address (127 = reset)
+    ssd1306_command(width - 1); // Column end address (127 = reset)
 
     i2c.end_transaction();
 

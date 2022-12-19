@@ -31,6 +31,7 @@
 #include "mqtt.h"
 #include "main.h"
 #include "notifier.h"
+#include "hunter.h"
 
 #if defined(ARDUINO)
 #include <Arduino.h>
@@ -1251,6 +1252,7 @@ void turn_on_station(unsigned char sid, ulong duration) {
 	if (os.set_station_bit(sid, 1, duration)) {
 		notif.add(NOTIFY_STATION_ON, sid, duration);
 	}
+	HunterStart(sid+1,round(duration/60+0.5)); // Starts X-Core Hunter zone for duration minutes +1
 }
 
 // after removing element q, update remaining stations in its group
@@ -1348,6 +1350,7 @@ void turn_off_station(unsigned char sid, time_os_t curr_time, unsigned char shif
 	#endif
 
 	os.set_station_bit(sid, 0);
+	HunterStop(sid+1); // Stops X-Core Hunter zones
 
 	// RAH implementation of flow sensor
 	if (flow_gallons > 1) {
