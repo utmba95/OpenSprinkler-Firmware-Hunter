@@ -681,18 +681,19 @@ void OpenSprinkler::begin() {
 	Wire.begin(); // init I2C
 #endif
 
-	hw_type = HW_TYPE_UNKNOWN;
+	hw_type = HW_TYPE_AC;
 	hw_rev = 0;
 		
 #if defined(ESP8266)
 
 	/* check hardware type */
-	if(detect_i2c(ACDR_I2CADDR)) hw_type = HW_TYPE_AC;
-	else if(detect_i2c(DCDR_I2CADDR)) hw_type = HW_TYPE_DC;
-	else if(detect_i2c(LADR_I2CADDR)) hw_type = HW_TYPE_LATCH;
+	// if(detect_i2c(ACDR_I2CADDR)) hw_type = HW_TYPE_AC;
+	// else if(detect_i2c(DCDR_I2CADDR)) hw_type = HW_TYPE_DC;
+	// else if(detect_i2c(LADR_I2CADDR)) hw_type = HW_TYPE_LATCH;
 	
 	/* detect hardware revision type */
-	if(detect_i2c(MAIN_I2CADDR)) {	// check if main PCF8574 exists
+	//if(detect_i2c(MAIN_I2CADDR)) {	// check if main PCF8574 exists
+	if(1){
 		/* assign revision 0 pins */
 		PIN_BUTTON_1 = V0_PIN_BUTTON_1;
 		PIN_BUTTON_2 = V0_PIN_BUTTON_2;

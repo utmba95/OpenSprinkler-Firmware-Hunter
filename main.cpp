@@ -28,6 +28,7 @@
 #include "weather.h"
 #include "opensprinkler_server.h"
 #include "mqtt.h"
+#include "hunter.h"
 
 #if defined(ARDUINO)
 	EthernetServer *m_server = NULL;
@@ -790,6 +791,7 @@ void do_loop()
 					if(!((bitvalue>>s)&1)) {
 						if (curr_time >= q->st && curr_time < q->st+q->dur) {
 							turn_on_station(sid);
+							HunterStart(sid+1,round((q->dur/60)+0.5)); // Starts X-Core Hunter zone for 'dur' minutes +1
 						} //if curr_time > scheduled_start_time
 					} // if current station is not running
 				}//end_s
@@ -1063,6 +1065,7 @@ void turn_on_station(byte sid) {
  */
 void turn_off_station(byte sid, ulong curr_time) {
 	os.set_station_bit(sid, 0);
+	HunterStop(sid+1); // Stops X-Core Hunter zones
 
 	byte qid = pd.station_qid[sid];
 	// ignore if we are turning off a station that's not running or scheduled to run
