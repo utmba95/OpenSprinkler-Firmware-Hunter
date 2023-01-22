@@ -413,6 +413,7 @@ void do_loop()
 
 	static ulong last_time = 0;
 	static ulong last_minute = 0;
+	static byte running_sid = 0;
 
 	byte bid, sid, s, pid, qid, bitvalue;
 	ProgramStruct prog;
@@ -791,6 +792,7 @@ void do_loop()
 					if(!((bitvalue>>s)&1)) {
 						if (curr_time >= q->st && curr_time < q->st+q->dur) {
 							turn_on_station(sid);
+							running_sid = sid;
 							HunterStart(sid+1,round((q->dur/60)+0.5)); // Starts X-Core Hunter zone for 'dur' minutes +1
 						} //if curr_time > scheduled_start_time
 					} // if current station is not running
@@ -917,10 +919,13 @@ void do_loop()
 				os.lcd.setCursor(0, 2);
 				os.lcd.clear(2, 2);
 				if(os.status.program_busy) {
-					os.lcd.print(F("curr: "));
-					uint16_t curr = os.read_current();
-					os.lcd.print(curr);
-					os.lcd.print(F(" mA"));
+					// os.lcd.print(F("curr: "));
+					// uint16_t curr = os.read_current();
+					// os.lcd.print(curr);
+					// os.lcd.print(F(" mA"));
+					char name[STATION_NAME_SIZE];
+					os.get_station_name(running_sid, name);
+					os.lcd.print(name);
 				}
 			}
 			#endif
