@@ -18,7 +18,7 @@ public:
 		for(byte i=0;i<NUM_CUSTOM_ICONS;i++) custom_chars[i]=NULL;
 	}
 	void begin() {
-		Wire.setClock(400000L); // lower clock to 400kHz
+		Wire.setClock(100000L); // lower clock to 100kHz for DS1307 RTC
 		flipScreenVertically();
 		setFont(Monospaced_plain_13);
 		fontWidth = 8;

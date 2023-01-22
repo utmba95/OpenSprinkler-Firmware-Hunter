@@ -37,6 +37,7 @@ uint8_t I2CRTC::addr = 0;
 I2CRTC::I2CRTC()
 {
 	Wire.begin();
+	Wire.setClock(100000L); // lower clock to 100kHz (conflicts with LCD, depends on order called)
 }
 
 bool I2CRTC::exists() {
