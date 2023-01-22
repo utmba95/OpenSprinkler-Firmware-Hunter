@@ -806,6 +806,8 @@ void OpenSprinkler::begin() {
 	clear_all_station_bits();
 	apply_all_station_bits();
 
+	pinModeExt(HUNTER_PIN, OUTPUT);
+
 #if defined(ESP8266)
 	// OS 3.0 has two independent sensors
 	pinModeExt(PIN_SENSOR1, INPUT_PULLUP);
@@ -930,7 +932,11 @@ void OpenSprinkler::begin() {
 	pinMode(PIN_BUTTON_3, INPUT_PULLUP);
 	
 	// detect and check RTC type
-	RTC.detect();
+	if (RTC.detect()) {
+		DEBUG_PRINTLN("RTC detected");
+	} else {
+		DEBUG_PRINTLN("RTC not detected");
+	}
 
 #else
 	DEBUG_PRINTLN(get_runtime_path());
