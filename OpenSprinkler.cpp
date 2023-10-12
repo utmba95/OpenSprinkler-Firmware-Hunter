@@ -806,12 +806,11 @@ void OpenSprinkler::begin() {
 	clear_all_station_bits();
 	apply_all_station_bits();
 
-	pinModeExt(HUNTER_PIN, OUTPUT);
-
 #if defined(ESP8266)
 	// OS 3.0 has two independent sensors
 	pinModeExt(PIN_SENSOR1, INPUT_PULLUP);
 	pinModeExt(PIN_SENSOR2, INPUT_PULLUP);
+	pinModeExt(HUNTER_PIN, OUTPUT);
 	
 #else
 	// pull shift register OE low to enable output
