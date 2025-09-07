@@ -853,11 +853,6 @@ void OpenSprinkler::begin() {
 
 #if defined(ESP8266) // ESP8266 specific initializations
 
-	/* check hardware type */
-	if(detect_i2c(ACDR_I2CADDR)) hw_type = HW_TYPE_AC;
-	else if(detect_i2c(DCDR_I2CADDR)) hw_type = HW_TYPE_DC;
-	else if(detect_i2c(LADR_I2CADDR)) hw_type = HW_TYPE_LATCH;
-
 	/* detect hardware revision type */
 	if(detect_i2c(MAIN_I2CADDR)) {	// check if main PCF8574 exists
 		/* assign revision 0 pins */
@@ -871,12 +866,18 @@ void OpenSprinkler::begin() {
 		PIN_SENSOR1 = V0_PIN_SENSOR1;
 		PIN_SENSOR2 = V0_PIN_SENSOR2;
 
-		// on revision 0, main IOEXP and driver IOEXP are two separate PCF8574 chips
-		if(hw_type==HW_TYPE_DC) {
+		/* check hardware type */
+		if(detect_i2c(ACDR_I2CADDR)) {
+			hw_type = HW_TYPE_AC;
+			drio = new PCF8574(ACDR_I2CADDR);
+		} else if(detect_i2c(DCDR_I2CADDR)) {
+			hw_type = HW_TYPE_DC;
 			drio = new PCF8574(DCDR_I2CADDR);
-		} else if(hw_type==HW_TYPE_LATCH) {
+		} else if(detect_i2c(LADR_I2CADDR)) {
+			hw_type = HW_TYPE_LATCH;
 			drio = new PCF8574(LADR_I2CADDR);
 		} else {
+			hw_type = HW_TYPE_UNKNOWN;
 			drio = new PCF8574(ACDR_I2CADDR);
 		}
 
@@ -892,19 +893,25 @@ void OpenSprinkler::begin() {
 
 	} else {
 
-		if(hw_type==HW_TYPE_DC) {
-			drio = new PCA9555(DCDR_I2CADDR);
-		} else if(hw_type==HW_TYPE_LATCH) {
-			drio = new PCA9555(LADR_I2CADDR);
-		} else {
-			drio = new PCA9555(ACDR_I2CADDR);
-		}
-		mainio = drio;
-
 		pinMode(16, INPUT);
 		if(digitalRead(16)==LOW) {
 			// revision 1
 			hw_rev = 1;
+			if(detect_i2c(ACDR_I2CADDR)) {
+				hw_type = HW_TYPE_AC;
+				drio = new PCA9555(ACDR_I2CADDR);
+			} else if(detect_i2c(DCDR_I2CADDR)) {
+				hw_type = HW_TYPE_DC;
+				drio = new PCA9555(DCDR_I2CADDR);
+			} else if(detect_i2c(LADR_I2CADDR)) {
+				hw_type = HW_TYPE_LATCH;
+				drio = new PCA9555(LADR_I2CADDR);
+			} else {
+				hw_type = HW_TYPE_UNKNOWN;
+				drio = new PCA9555(ACDR_I2CADDR);
+			}
+			mainio = drio;
+
 			mainio->i2c_write(NXP_CONFIG_REG, V1_IO_CONFIG);
 			mainio->i2c_write(NXP_OUTPUT_REG, V1_IO_OUTPUT);
 
@@ -919,15 +926,48 @@ void OpenSprinkler::begin() {
 			PIN_LATCH_COM = V1_PIN_LATCH_COM;
 			PIN_SENSOR1 = V1_PIN_SENSOR1;
 			PIN_SENSOR2 = V1_PIN_SENSOR2;
-		} else {
-			// revision 2 and above
-			if(detect_i2c(EEPROM_I2CADDR+2)) { // revision 4 has an I2C EEPROM at this address; skipping +1 due to addr conflict with PCF8563
+		} else { // revision 2 and above
+			// conditions for revision 4:
+			// * has I2C EEPROM @ 0x52? --> OS 3.4 AC (skipping 0x51 due to conflict with PCF8563)
+			// * has CH224A/Q @ both 0x22, 0x23? --> OS 3.4 DC
+			bool has_eeprom_2 = detect_i2c(EEPROM_I2CADDR+2);
+			bool has_ch224_0 = detect_i2c(CH224_I2CADDR);
+			bool has_ch224_1 = detect_i2c(CH224_I2CADDR+1);
+			if(has_eeprom_2 || (has_ch224_0 && has_ch224_1)) { 
 				hw_rev = 4;
-			} else if(detect_i2c(EEPROM_I2CADDR)) { // revision 3 has an I2C EEPROM at this address
-				hw_rev = 3;
+				drio = new PCA9555(ACDR_I2CADDR); // all OS 3.4 models have IOEXP at 0x21 due to address conflicts with CH224
+				mainio = drio;
+				if(has_ch224_0 && has_ch224_1) {
+					hw_type = HW_TYPE_DC;
+					//pinModeExt(V2_PIN_BOOST_SEL, INPUT);
+					mainio->i2c_write(NXP_CONFIG_REG, 0xFF00);
+					DEBUG_PRINT("BOOST_SEL:");
+					Serial.println(mainio->i2c_read(NXP_INPUT_REG)>>8, BIN);
+				} else {
+					hw_type = HW_TYPE_AC;
+				}
 			} else {
-				hw_rev = 2;
+				if(detect_i2c(EEPROM_I2CADDR)) { // revision 3 has an I2C EEPROM at this address
+					hw_rev = 3;
+				} else {
+					hw_rev = 2;
+				}
+				if(detect_i2c(ACDR_I2CADDR)) {
+					hw_type = HW_TYPE_AC;
+					drio = new PCA9555(ACDR_I2CADDR);
+				} else if(detect_i2c(DCDR_I2CADDR)) {
+					hw_type = HW_TYPE_DC;
+					drio = new PCA9555(DCDR_I2CADDR);
+				} else if(detect_i2c(LADR_I2CADDR)) {
+					hw_type = HW_TYPE_LATCH;
+					drio = new PCA9555(LADR_I2CADDR);
+				} else {
+					hw_type = HW_TYPE_UNKNOWN;
+					drio = new PCA9555(ACDR_I2CADDR);
+				}
 			}
+			mainio = drio;
+
 			mainio->i2c_write(NXP_CONFIG_REG, V2_IO_CONFIG);
 			mainio->i2c_write(NXP_OUTPUT_REG, V2_IO_OUTPUT);
 
