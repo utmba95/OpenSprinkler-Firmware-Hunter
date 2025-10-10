@@ -154,9 +154,7 @@ jobs:
           path: ./firmware
 
       - name: Add firmware to release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: firmware/*
+        if: false  # disable attaching firmware assets to the release
 
   release-docker:
     name: Release Docker
