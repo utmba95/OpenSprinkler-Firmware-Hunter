@@ -648,7 +648,7 @@ unsigned char OpenSprinkler::start_ether() {
 	if(!eth.begin((uint8_t*)tmp_buffer))	return 0;
 	lcd_print_line_clear_pgm(PSTR("Start wired link"), 1);
 	lcd_print_line_clear_pgm(eth.isW5500 ? PSTR("  [w5500]    ") : PSTR(" [enc28j60]  "), 2);
-	
+
 	ulong timeout = millis()+60000; // 60 seconds time out
 	unsigned char timecount = 1;
 	while (!eth.connected() && (long)(millis()-timeout)<0) { // overflow proof
@@ -933,16 +933,12 @@ void OpenSprinkler::begin() {
 			bool has_eeprom_2 = detect_i2c(EEPROM_I2CADDR+2);
 			bool has_ch224_0 = detect_i2c(CH224_I2CADDR);
 			bool has_ch224_1 = detect_i2c(CH224_I2CADDR+1);
-			if(has_eeprom_2 || (has_ch224_0 && has_ch224_1)) { 
+			if(has_eeprom_2 || (has_ch224_0 && has_ch224_1)) {
 				hw_rev = 4;
 				drio = new PCA9555(ACDR_I2CADDR); // all OS 3.4 models have IOEXP at 0x21 due to address conflicts with CH224
 				mainio = drio;
 				if(has_ch224_0 && has_ch224_1) {
 					hw_type = HW_TYPE_DC;
-					//pinModeExt(V2_PIN_BOOST_SEL, INPUT);
-					mainio->i2c_write(NXP_CONFIG_REG, 0xFF00);
-					DEBUG_PRINT("BOOST_SEL:");
-					Serial.println(mainio->i2c_read(NXP_INPUT_REG)>>8, BIN);
 				} else {
 					hw_type = HW_TYPE_AC;
 				}
@@ -1998,7 +1994,7 @@ int8_t OpenSprinkler::send_http_request(const char* server, uint16_t port, char*
   		bool mfln = _c->probeMaxFragmentLength(server, port, 512);
   		DEBUG_PRINTF("MFLN supported: %s\n", mfln ? "yes" : "no");
   		if (mfln) {
-				_c->setBufferSizes(512, 512); 
+				_c->setBufferSizes(512, 512);
 			} else {
 				_c->setBufferSizes(2048, 2048);
 			}
@@ -2031,7 +2027,7 @@ int8_t OpenSprinkler::send_http_request(const char* server, uint16_t port, char*
 	}
 #else
 	EthernetClient *client = NULL;
-	
+
 	if (usessl) {
 		client = new EthernetClientSsl();
 	} else {
@@ -2660,7 +2656,7 @@ void OpenSprinkler::lcd_print_time(time_os_t t)
 #endif
 	lcd.setCursor(0, 0);
 	lcd_print_2digit(hour(t));
-	
+
 	lcd_print_pgm(PSTR(":"));
 
 	lcd_print_2digit(minute(t));
@@ -2694,7 +2690,7 @@ void OpenSprinkler::lcd_print_ip(const unsigned char *ip, unsigned char endian) 
 	lcd.setCursor(0, 0);
 	for (unsigned char i=0; i<4; i++) {
 		lcd.print(endian ? (int)ip[3-i] : (int)ip[i]);
-		
+
 		if(i<3) {
 			lcd_print_pgm(PSTR("."));
 		}

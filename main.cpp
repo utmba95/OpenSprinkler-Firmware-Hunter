@@ -141,7 +141,7 @@ void flow_poll() {
 	flow_count++;
 
 	/* RAH implementation of flow sensor */
-	if (flow_start == 0) { 
+	if (flow_start == 0) {
 		flow_gallons = 0;
 		flow_start = curr;
 	} // if first pulse, record time
@@ -323,7 +323,7 @@ void ui_state_machine() {
 							break;
 					}
 				#endif
-				
+
 				ui_state = UI_STATE_DISP_IP;
 				#if defined(USE_SSD1306)
 					os.lcd.display();
@@ -603,7 +603,7 @@ void do_loop()
 			}
 		}
 	}
-	
+
 #endif
 
 	static time_os_t last_time = 0;
@@ -1261,7 +1261,7 @@ void turn_on_station(unsigned char sid, ulong duration) {
 	// RAH implementation of flow sensor
 	flow_start=0;
 	//Added flow_gallons reset to station turn on.
-	flow_gallons=0;  
+	flow_gallons=0;
 
 	if (os.set_station_bit(sid, 1, duration)) {
 		notif.add(NOTIFY_STATION_ON, sid, duration);

@@ -234,6 +234,16 @@ void print_header(OTF_PARAMS_DEF, bool isJson=true, int len=0) {
 	res.writeHeader(F("Cache-Control"), F("max-age=0, no-cache, no-store, must-revalidate"));
 	res.writeHeader(F("Connection"), F("close"));
 }
+
+void print_header_compressed_html(OTF_PARAMS_DEF, int len) {
+	res.writeStatus(200, F("OK"));
+	res.writeHeader(F("Content-Type"), F("text/html; charset=utf-8"));
+	res.writeHeader(F("Access-Control-Allow-Origin"), F("*")); // from esp8266 2.4 this has to be sent explicitly
+	res.writeHeader(F("Content-Length"), len);
+	res.writeHeader(F("Vary"), F("Accept-Encoding"));
+	res.writeHeader(F("Content-Encoding"), F("gzip"));
+	res.writeHeader(F("Connection"), F("close"));
+}
 #else
 void print_header(bool isJson=true)  {
 	bfill.emit_p(PSTR("$F$F$F$F\r\n"), html200OK, isJson?htmlContentJSON:htmlContentHTML, htmlAccessControl, htmlNoCache);
@@ -302,8 +312,9 @@ static String scanned_ssids;
 
 void on_ap_home(OTF_PARAMS_DEF) {
 	if(os.get_wifi_mode()!=WIFI_MODE_AP) return;
-	print_header(OTF_PARAMS, false, strlen_P((char*)ap_home_html));
-	res.writeBodyChunk((char *) "%s", ap_home_html);
+	print_header_compressed_html(OTF_PARAMS, ap_home_html_gz_len);
+	//res.writeBodyChunk((char *) "%s", ap_home_html_gz);
+	res.writeBodyData((const __FlashStringHelper*)ap_home_html_gz, ap_home_html_gz_len);
 }
 
 void on_ap_scan(OTF_PARAMS_DEF) {
@@ -979,7 +990,7 @@ void server_change_program(OTF_PARAMS_DEF) {
 	*(char*)(&prog) = parse_listdata(&pv);
 	prog.days[0]= parse_listdata(&pv);
 	prog.days[1]= parse_listdata(&pv);
-	
+
 	if (prog.type == PROGRAM_TYPE_INTERVAL) {
 		if (prog.days[1] == 0) handle_return(HTML_DATA_OUTOFBOUND)
 		else if (prog.days[1] >= 1) {
@@ -1700,7 +1711,7 @@ void server_change_password(OTF_PARAMS_DEF) {
 #endif
 	if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("npw"), true)) {
 		const int pwBufferSize = TMP_BUFFER_SIZE/2;
-		char *tbuf2 = tmp_buffer + pwBufferSize;	// use the second half of tmp_buffer 
+		char *tbuf2 = tmp_buffer + pwBufferSize;	// use the second half of tmp_buffer
 		if (findKeyVal(FKV_SOURCE, tbuf2, pwBufferSize, PSTR("cpw"), true) && strncmp(tmp_buffer, tbuf2, pwBufferSize) == 0) {
 			os.sopt_save(SOPT_PASSWORD, tmp_buffer);
 			handle_return(HTML_SUCCESS);
@@ -2020,7 +2031,7 @@ void server_pause_queue(OTF_PARAMS_DEF) {
 			pd.set_pause();
 			os.status.pause_state = 1;
 		}
-		
+
 		handle_return(HTML_SUCCESS);
 	}
 
@@ -2215,20 +2226,14 @@ URLHandler urls[] = {
 
 // handle Ethernet request
 #if defined(ESP8266)
-void on_ap_update(OTF_PARAMS_DEF) {
-	print_header(OTF_PARAMS, false, strlen_P((char*)ap_update_html));
-	res.writeBodyChunk((char *) "%s", ap_update_html);
-}
-
-void on_sta_update(OTF_PARAMS_DEF) {
+void on_firmware_update(OTF_PARAMS_DEF) {
 	if(req.isCloudRequest()) otf_send_result(OTF_PARAMS, HTML_NOT_PERMITTED, "fw update");
-	else {
-		print_header(OTF_PARAMS, false, strlen_P((char*)sta_update_html));
-		res.writeBodyChunk((char *) "%s", sta_update_html);
-	}
+	print_header_compressed_html(OTF_PARAMS, update_html_gz_len);
+	//res.writeBodyChunk((char *) "%s", ap_update_html);
+	res.writeBodyData((const __FlashStringHelper*)update_html_gz, update_html_gz_len);
 }
 
-void on_sta_upload_fin() {
+void on_firmware_upload_fin() {
 	if (os.iopts[IOPT_IGNORE_PASSWORD]) {
 		// don't check password
 	} else if(!(update_server->hasArg("pw") && os.password_verify(update_server->arg("pw").c_str()))) {
@@ -2243,17 +2248,26 @@ void on_sta_upload_fin() {
 	}
 
 	update_server_send_result(HTML_SUCCESS);
+	delay(1000); // so the UI has time to receive the success code
 	os.reboot_dev(REBOOT_CAUSE_FWUPDATE);
 }
 
-void on_ap_upload_fin() { on_sta_upload_fin(); }
+void on_update_options() {
+	update_server->sendHeader("Access-Control-Allow-Origin", "*");
+	update_server->sendHeader("Access-Control-Max-Age", "10000");
+	update_server->sendHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
+	update_server->sendHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	update_server->send(200, "text/plain", "");
+}
 
-void on_sta_upload() {
+void on_firmware_upload() {
 	HTTPUpload& upload = update_server->upload();
 	if(upload.status == UPLOAD_FILE_START){
-		// todo:
-		// WiFiUDP::stopAll();
-		//mqtt_client->disconnect();
+		if(os.iopts[IOPT_WIFI_MODE]==WIFI_MODE_STA) {
+			// TODO: stopping these can cause problems if the update fails and the user abandons the task
+			//WiFiUDP::stopAll();
+			//mqtt_client->disconnect();
+		}
 		DEBUG_PRINT(F("upload: "));
 		DEBUG_PRINTLN(upload.filename);
 		uint32_t maxSketchSpace = (ESP.getFreeSketchSpace()-0x1000)&0xFFFFF000;
@@ -2279,8 +2293,6 @@ void on_sta_upload() {
 	delay(0);
 }
 
-void on_ap_upload() { on_sta_upload(); }
-
 void start_server_client() {
 	if(!otf) return;
 	static bool callback_initialized = false;
@@ -2288,8 +2300,9 @@ void start_server_client() {
 	if(!callback_initialized) {
 		otf->on("/", server_home);  // handle home page
 		otf->on("/index.html", server_home);
-		otf->on("/update", on_sta_update, OTF::HTTP_GET); // handle firmware update
-		update_server->on("/update", HTTP_POST, on_sta_upload_fin, on_sta_upload);
+		otf->on("/update", on_firmware_update, OTF::HTTP_GET); // handle firmware update
+		update_server->on("/update", HTTP_POST, on_firmware_upload_fin, on_firmware_upload);
+		update_server->on("/update", HTTP_OPTIONS, on_update_options);
 
 		// set up all other handlers
 		char uri[4];
@@ -2316,8 +2329,9 @@ void start_server_ap() {
 	otf->on("/jsap", on_ap_scan);
 	otf->on("/ccap", on_ap_change_config);
 	otf->on("/jtap", on_ap_try_connect);
-	otf->on("/update", on_ap_update, OTF::HTTP_GET);
-	update_server->on("/update", HTTP_POST, on_ap_upload_fin, on_ap_upload);
+	otf->on("/update", on_firmware_update, OTF::HTTP_GET);
+	update_server->on("/update", HTTP_POST, on_firmware_upload_fin, on_firmware_upload);
+	update_server->on("/update", HTTP_OPTIONS, on_update_options);
 	otf->onMissingPage(on_ap_home);
 	update_server->begin();
 
