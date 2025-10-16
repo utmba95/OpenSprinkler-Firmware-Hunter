@@ -330,7 +330,7 @@ public:
 	static void switch_remotestation(RemoteOTCStationData *data, bool turnon, uint16_t dur=0); // switch remote OTC station
 	static void switch_gpiostation(GPIOStationData *data, bool turnon); // switch gpio station
 	static void switch_httpstation(HTTPStationData *data, bool turnon, bool usessl=false); // switch http station
-	
+
 	// -- options and data storeage
 	static void nvdata_load();
 	static void nvdata_save();
@@ -370,7 +370,7 @@ public:
 	static int8_t send_http_request(uint32_t ip4, uint16_t port, char* p, void(*callback)(char*)=NULL, bool usessl=false, uint16_t timeout=5000);
 	static int8_t send_http_request(const char* server, uint16_t port, char* p, void(*callback)(char*)=NULL, bool usessl=false, uint16_t timeout=5000);
 	static int8_t send_http_request(char* server_with_port, char* p, void(*callback)(char*)=NULL, bool usessl=false, uint16_t timeout=5000);
-	
+
 	#if defined(USE_OTF)
 	static OTCConfig otc;
 	#endif
@@ -428,7 +428,7 @@ public:
 	#if defined(ESP8266)
 	static IOEXP *mainio, *drio;
 	static IOEXP *expanders[];
-	
+
 	static void detect_expanders();
 	static unsigned char get_wifi_mode() { if (useEth) return WIFI_MODE_STA; else return wifi_testmode ? WIFI_MODE_STA : iopts[IOPT_WIFI_MODE];}
 	static unsigned char wifi_testmode;
@@ -454,7 +454,7 @@ private:
 #endif // LCD functions
 
 #if defined(ESP8266)
-	static void latch_boost(unsigned char volt=0);
+	static void latch_boost(int8_t volt=-1);
 	static void latch_open(unsigned char sid);
 	static void latch_close(unsigned char sid);
 	static void latch_setzonepin(unsigned char sid, unsigned char value);

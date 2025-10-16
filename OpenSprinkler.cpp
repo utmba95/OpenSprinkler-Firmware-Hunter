@@ -421,8 +421,8 @@ unsigned char OpenSprinkler::iopts[] = {
 	0,  // latch on volt
 	0,  // latch off volt
 	0,  // notif enable bits 2
-	DEFAULT_UNDERCURRENT_THRESHOLD/10, // imin threshold scaled down by 10
-	DEFAULT_OVERCURRENT_LIMIT/10,      // imax limit scaled down by 10
+	DEFAULT_UNDERCURRENT_THRESHOLD/10, // imin threshold scaled down by 10.
+	0,  // imax limit scaled down by 10. 0 means using default value
 	0,  // reserved 6
 	0,  // reserved 7
 	0,  // reserved 8
@@ -1165,13 +1165,14 @@ pinModeExt(PIN_BUTTON_3, INPUT_PULLUP);
 /** LATCH boost voltage
  *
  */
-void OpenSprinkler::latch_boost(unsigned char volt) {
-	// if volt is 0 or larger than max volt, ignore it and boost according to BOOST_TIME only
-	if(volt==0 || volt>iopt_max[IOPT_LATCH_ON_VOLTAGE]) {
+void OpenSprinkler::latch_boost(int8_t volt) {
+	// if volt is negative or larger than max volt, ignore it and boost according to BOOST_TIME only
+	if(volt<0 || volt>iopt_max[IOPT_LATCH_ON_VOLTAGE]) {
 		digitalWriteExt(PIN_BOOST, HIGH);      // enable boost converter
 		delay((int)iopts[IOPT_BOOST_TIME]<<2); // wait for booster to charge
 		digitalWriteExt(PIN_BOOST, LOW);       // disable boost converter
 	} else {
+		if(volt == 0) volt = DEFAULT_LATCH_BOOST_VOLTAGE;
 		// boost to specified volt, up to time specified by BOOST_TIME
 		uint16_t top = (uint16_t)(volt * 19.25f); // ADC = 1024 * volt * 1.5k / 79.8k
 		if(analogRead(PIN_CURR_SENSE)>=top) return; // if the voltage has already reached top, return right away
@@ -1732,6 +1733,9 @@ int16_t OpenSprinkler::get_imin() {
 
 int16_t OpenSprinkler::get_imax() {
 	unsigned char i = iopts[IOPT_I_MAX_LIMIT];
+	if(hw_type == HW_TYPE_DC) {
+		return (i == 0) ? (DEFAULT_OVERCURRENT_LIMIT+OVERCURRENT_DC_EXTRA) : (i == 255 ? -1 : i*10);
+	}
 	return (i == 0) ? DEFAULT_OVERCURRENT_LIMIT : (i == 255 ? -1 : i*10);
 }
 

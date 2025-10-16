@@ -160,7 +160,9 @@ enum {
 #define DEFAULT_EMPTY_STRING      ""
 #define DEFAULT_UNDERCURRENT_THRESHOLD 100 // in mA
 #define DEFAULT_OVERCURRENT_LIMIT 1200 // in mA
-#define OVERCURRENT_INRUSH_EXTRA   600 // in mA
+#define OVERCURRENT_INRUSH_EXTRA   600 // in mA, extra margin for inrush
+#define OVERCURRENT_DC_EXTRA      1200 // in mA, extra margin for DC controller
+#define DEFAULT_LATCH_BOOST_VOLTAGE  9 // default latch boost voltage in volt
 
 #if (defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega1284__))
 	#define OS_AVR
