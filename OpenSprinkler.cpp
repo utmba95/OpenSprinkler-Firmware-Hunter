@@ -96,6 +96,8 @@ extern unsigned char curr_alert_sid;
 	unsigned char OpenSprinkler::wifi_bssid[6]={0};
 	unsigned char OpenSprinkler::wifi_channel=255;
 	unsigned char OpenSprinkler::wifi_testmode = 0;
+	CH224 OpenSprinkler::usbpd;
+	uint8_t OpenSprinkler::actual_pd_voltage = 0;
 #elif defined(ARDUINO)
 	extern SdFat sd;
 #else
@@ -182,7 +184,7 @@ const char iopt_json_names[] PROGMEM =
 	"ife2\0"
 	"imin\0"
 	"imax\0"
-	"resv6"
+	"tpdv\0"
 	"resv7"
 	"resv8"
 	"wimod"
@@ -261,7 +263,7 @@ const char iopt_prompts[] PROGMEM =
 	"Notif 2 Enable  "
 	"I min threshold "
 	"I max limit     "
-	"Reserved 6      "
+	"Target PD Volt. "
 	"Reserved 7      "
 	"Reserved 8      "
 	"WiFi mode?      "
@@ -339,7 +341,7 @@ const unsigned char iopt_max[] PROGMEM = {
 	255,
 	100,
 	255,
-	255,
+	210,
 	255,
 	255,
 	255,
@@ -423,7 +425,7 @@ unsigned char OpenSprinkler::iopts[] = {
 	0,  // notif enable bits 2
 	DEFAULT_UNDERCURRENT_THRESHOLD/10, // imin threshold scaled down by 10.
 	0,  // imax limit scaled down by 10. 0 means using default value
-	0,  // reserved 6
+	DEFAULT_TARGET_PD_VOLTAGE,  // target pd voltage (in unit of 100mV)
 	0,  // reserved 7
 	0,  // reserved 8
 	WIFI_MODE_AP, // wifi mode
@@ -1162,6 +1164,24 @@ pinModeExt(PIN_BUTTON_3, INPUT_PULLUP);
 }
 
 #if defined(ESP8266)
+/** Setup PD voltage
+ *
+ */
+void OpenSprinkler::setup_pd_voltage() {
+	actual_pd_voltage = 0;
+	if(!(hw_rev==4 && hw_type==HW_TYPE_DC)) return;
+	usbpd.begin();
+	if(usbpd.update_power_data()) {
+		uint16_t tpdv = iopts[IOPT_TARGET_PD_VOLTAGE];
+		if(tpdv < 50) tpdv = DEFAULT_TARGET_PD_VOLTAGE; // anything below 5.0V will be force converted to default tpdv
+		usbpd.request_voltage_closest(tpdv*100);
+		delay(200);
+		actual_pd_voltage = usbpd.get_output_voltage_mv()/100; // read back the actual voltage
+	} else {
+		// the power source does not support PD
+	}
+}
+
 /** LATCH boost voltage
  *
  */
@@ -2972,6 +2992,20 @@ void OpenSprinkler::lcd_print_option(int i) {
 		lcd.print('-');
 		#endif
 		break;
+	case IOPT_TARGET_PD_VOLTAGE:
+		#if defined(ESP8266)
+		if(hw_rev == 4 && hw_type==HW_TYPE_DC) {
+			lcd.print(iopts[i]/10);
+			lcd.print('.');
+			lcd.print(iopts[i]%10);
+			lcd.print('V');
+		} else {
+			lcd.print('-');
+		}
+		#else
+		lcd.print('-');
+		#endif
+		break;
 	default:
 		// if this is a boolean option
 		if (pgm_read_byte(iopt_max+i)==1)
@@ -3089,6 +3123,7 @@ void OpenSprinkler::ui_set_options(int oid)
 				if(i==IOPT_RSO_RETIRED) i++;
 				if (hw_type==HW_TYPE_AC && i==IOPT_BOOST_TIME) i++;	// skip boost time for non-DC controller
 				if (i==IOPT_LATCH_ON_VOLTAGE && hw_type!=HW_TYPE_LATCH) i+= 2; // skip latch voltage defs for non-latch controllers
+				if (i==IOPT_TARGET_PD_VOLTAGE && !(hw_rev==4 && hw_type==HW_TYPE_DC)) i++; // skip target pd voltage if not 3.4 or not DC type
 				#if defined(ESP8266)
 				else if (lcd.type()==LCD_I2C && i==IOPT_LCD_CONTRAST) i+=3;
 				#else

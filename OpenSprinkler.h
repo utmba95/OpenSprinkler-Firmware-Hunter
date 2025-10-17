@@ -50,6 +50,7 @@
 		#include <Ticker.h>
 		#include "espconnect.h"
 		#include "EMailSender.h"
+		#include "ch224.h"
 	#else // for AVR
 		#include <SdFat.h>
 		#include <Ethernet.h>
@@ -428,6 +429,8 @@ public:
 	#if defined(ESP8266)
 	static IOEXP *mainio, *drio;
 	static IOEXP *expanders[];
+	static CH224 usbpd;
+	static uint8_t actual_pd_voltage;
 
 	static void detect_expanders();
 	static unsigned char get_wifi_mode() { if (useEth) return WIFI_MODE_STA; else return wifi_testmode ? WIFI_MODE_STA : iopts[IOPT_WIFI_MODE];}
@@ -438,6 +441,7 @@ public:
 	static void save_wifi_ip();
 	static void reset_to_ap();
 	static unsigned char state;
+	static void setup_pd_voltage();
 	#endif
 
 #else

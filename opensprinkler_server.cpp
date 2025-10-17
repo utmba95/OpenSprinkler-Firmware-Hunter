@@ -1067,8 +1067,12 @@ void server_json_options_main() {
 		if (oid==IOPT_LATCH_ON_VOLTAGE || oid==IOPT_LATCH_OFF_VOLTAGE) {
 			if (os.hw_type!=HW_TYPE_LATCH) continue;
 		}
+
+		if (oid==IOPT_TARGET_PD_VOLTAGE) {
+			if (!(os.hw_rev==4 && os.hw_type==HW_TYPE_DC)) continue;
+		}
 		#else
-		if (oid==IOPT_BOOST_TIME || oid==IOPT_I_MIN_THRESHOLD || oid==IOPT_I_MAX_LIMIT || oid==IOPT_LATCH_ON_VOLTAGE || oid==IOPT_LATCH_OFF_VOLTAGE) continue;
+		if (oid==IOPT_BOOST_TIME || oid==IOPT_I_MIN_THRESHOLD || oid==IOPT_I_MAX_LIMIT || oid==IOPT_LATCH_ON_VOLTAGE || oid==IOPT_LATCH_OFF_VOLTAGE || oid==IOPT_TARGET_PD_VOLTAGE) continue;
 		#endif
 
 		#if defined(ESP8266)
@@ -1077,7 +1081,7 @@ void server_json_options_main() {
 		}
 		#endif
 
-		if (oid==IOPT_SEQUENTIAL_RETIRED || oid==IOPT_URS_RETIRED || oid==IOPT_RSO_RETIRED) continue;
+		if (oid==IOPT_SEQUENTIAL_RETIRED || oid==IOPT_URS_RETIRED || oid==IOPT_RSO_RETIRED || oid==IOPT_RESERVE_7 || oid==IOPT_RESERVE_8) continue;
 
 #if defined(ARDUINO)
 		#if defined(ESP8266)
@@ -1236,6 +1240,7 @@ void server_json_controller_main(OTF_PARAMS_DEF) {
 
 #if defined(ESP8266)
 	bfill.emit_p(PSTR("\"RSSI\":$D,"), (int16_t)WiFi.RSSI());
+	bfill.emit_p(PSTR("\"apdv\":$D,"), os.actual_pd_voltage);
 #endif
 
 #if defined(USE_OTF)

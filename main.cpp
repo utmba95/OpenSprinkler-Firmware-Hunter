@@ -430,6 +430,9 @@ void do_setup() {
 
 	os.begin();          // OpenSprinkler init
 	os.options_setup();  // Setup options
+#if defined(ESP8266)
+	os.setup_pd_voltage();
+#endif
 
 	pd.init();           // ProgramData init
 

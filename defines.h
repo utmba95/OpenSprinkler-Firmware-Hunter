@@ -163,6 +163,7 @@ enum {
 #define OVERCURRENT_INRUSH_EXTRA   600 // in mA, extra margin for inrush
 #define OVERCURRENT_DC_EXTRA      1200 // in mA, extra margin for DC controller
 #define DEFAULT_LATCH_BOOST_VOLTAGE  9 // default latch boost voltage in volt
+#define DEFAULT_TARGET_PD_VOLTAGE   78 // default target voltage (unit: 100mV, so 78 means 7800mV ot 7.8V)
 
 #if (defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega1284__))
 	#define OS_AVR
@@ -272,7 +273,7 @@ enum {
 	IOPT_NOTIF2_ENABLE,
 	IOPT_I_MIN_THRESHOLD,
 	IOPT_I_MAX_LIMIT,
-	IOPT_RESERVE_6,
+	IOPT_TARGET_PD_VOLTAGE,
 	IOPT_RESERVE_7,
 	IOPT_RESERVE_8,
 	IOPT_WIFI_MODE, //ro
