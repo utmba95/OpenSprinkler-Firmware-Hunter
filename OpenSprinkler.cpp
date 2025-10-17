@@ -941,6 +941,7 @@ void OpenSprinkler::begin() {
 				mainio = drio;
 				if(has_ch224_0 && has_ch224_1) {
 					hw_type = HW_TYPE_DC;
+					usbpd.begin();
 				} else {
 					hw_type = HW_TYPE_AC;
 				}
@@ -1170,7 +1171,6 @@ pinModeExt(PIN_BUTTON_3, INPUT_PULLUP);
 void OpenSprinkler::setup_pd_voltage() {
 	actual_pd_voltage = 0;
 	if(!(hw_rev==4 && hw_type==HW_TYPE_DC)) return;
-	usbpd.begin();
 	if(usbpd.update_power_data()) {
 		uint16_t tpdv = iopts[IOPT_TARGET_PD_VOLTAGE];
 		if(tpdv < 50) tpdv = DEFAULT_TARGET_PD_VOLTAGE; // anything below 5.0V will be force converted to default tpdv

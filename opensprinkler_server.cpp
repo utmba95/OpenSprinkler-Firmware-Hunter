@@ -1528,6 +1528,7 @@ void server_change_options(OTF_PARAMS_DEF)
 	bool time_change = false;
 	bool weather_change = false;
 	bool sensor_change = false;
+	bool tpdv_change = false;
 
 	// !!! p and bfill share the same buffer, so don't write
 	// to bfill before you are done analyzing the buffer !!!
@@ -1578,6 +1579,7 @@ void server_change_options(OTF_PARAMS_DEF)
 				os.iopts[oid] &= 0x7F;
 			}
 			if (oid>=IOPT_SENSOR1_TYPE && oid<=IOPT_SENSOR2_OFF_DELAY) sensor_change = true;
+			if (oid==IOPT_TARGET_PD_VOLTAGE) tpdv_change = true;
 		}
 	}
 
@@ -1674,6 +1676,12 @@ void server_change_options(OTF_PARAMS_DEF)
 
 	os.iopts_save();
 	os.populate_master();
+
+#if defined(ESP8266)
+	if (tpdv_change) {
+		os.setup_pd_voltage();
+	}
+#endif
 
 	if(time_change) {
 		os.status.req_ntpsync = 1;
