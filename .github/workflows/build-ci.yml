@@ -153,9 +153,6 @@ jobs:
           name: firmware
           path: ./firmware
 
-      - name: Add firmware to release
-        if: false  # disable attaching firmware assets to the release
-
   release-docker:
     name: Release Docker
     runs-on: ubuntu-latest
