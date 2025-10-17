@@ -1588,7 +1588,8 @@ void OpenSprinkler::sensor_resetall() {
  * it's further discounted by 1/3.3
  */
 #if defined(ARDUINO)
-uint16_t OpenSprinkler::read_current() {
+uint16_t OpenSprinkler::read_current(bool use_ema) {
+	static uint16_t ema = 0; // exponential moving average
 	static float scale = -1;
 	if(scale < 0) { // assign scale upon first call of this function
 		if (hw_type == HW_TYPE_DC) {
@@ -1607,7 +1608,9 @@ uint16_t OpenSprinkler::read_current() {
 			scale = 0.0;  // for other controllers, current is 0
 		}
 	}
-	return analogRead(PIN_CURR_SENSE)*scale;
+	uint16_t curr = analogRead(PIN_CURR_SENSE)*scale;
+	ema = curr / 5 + ema * 4 / 5; // using alpha=0.2 for exponential moving average
+	return use_ema ? ema : curr;
 }
 #endif
 
@@ -2871,7 +2874,7 @@ void OpenSprinkler::lcd_print_screen(char c) {
 		lcd.setCursor(2, 2);
 		if(status.program_busy && !status.pause_state) {
 			//lcd.print(F("Curr: "));
-			lcd.print(read_current());
+			lcd.print(read_current(true));
 			lcd.print(F(" mA      "));
 		} else {
 	#else

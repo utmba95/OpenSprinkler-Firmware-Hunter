@@ -356,7 +356,7 @@ public:
 	static unsigned char detect_programswitch_status(time_os_t curr_time); // get program switch status
 	static void sensor_resetall();
 
-	static uint16_t read_current(); // read current sensing value
+	static uint16_t read_current(bool use_ema=false); // read current sensing value. use_ema uses exponential moving average for filtering
 	static uint16_t baseline_current; // resting state current
 
 	static int detect_exp();      // detect the number of expansion boards

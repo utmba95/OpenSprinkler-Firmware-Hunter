@@ -1282,7 +1282,7 @@ void server_json_controller_main(OTF_PARAMS_DEF) {
 	}
 
 #if defined(ARDUINO)
-	uint16_t current = os.read_current();
+	uint16_t current = os.read_current(true);
 	if((!os.status.program_busy) && (current<os.baseline_current)) current=0;
 	bfill.emit_p(PSTR("\"curr\":$D,"), current);
 #endif

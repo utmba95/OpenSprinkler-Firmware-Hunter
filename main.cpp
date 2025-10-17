@@ -1356,7 +1356,7 @@ void turn_off_station(unsigned char sid, time_os_t curr_time, unsigned char shif
 	} //else { return; }
 
 	#if defined(ARDUINO)
-	int16_t current = (int16_t)os.read_current();
+	int16_t current = (int16_t)os.read_current(true); // use ema value
 	int16_t imin = os.get_imin();
 	// if current is less than imin threshold and hardware type is AC or DC
 	// send an station undercurrent alert
