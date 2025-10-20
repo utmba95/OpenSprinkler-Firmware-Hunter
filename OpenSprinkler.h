@@ -264,7 +264,7 @@ public:
 	static const char*sopts[]; // string options
 	static unsigned char station_bits[];     // station activation bits. each byte corresponds to a board (8 stations)
 																	// first byte-> master controller, second byte-> ext. board 1, and so on
-	// todo future: the following attribute bytes are for backward compatibility
+	// Note: the following attribute bytes are for backward compatibility
 	static unsigned char attrib_mas[];
 	static unsigned char attrib_igs[];
 	static unsigned char attrib_mas2[];

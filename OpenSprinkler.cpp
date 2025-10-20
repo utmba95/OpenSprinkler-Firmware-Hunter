@@ -1235,7 +1235,7 @@ void OpenSprinkler::latch_disable_alloutputs_v2() {
 	// latch v2 has a 74hc595 which controls all h-bridge cathode pins
 	drio->shift_out(V2_PIN_SRLAT, V2_PIN_SRCLK, V2_PIN_SRDAT, 0x00);
 
-	// todo: handle expander
+	// todo: handle latch expander
 }
 
 /** Set one zone (for LATCH controller)
@@ -1275,7 +1275,7 @@ void OpenSprinkler::latch_setzoneoutput_v2(unsigned char sid, unsigned char A, u
 		drio->shift_out(V2_PIN_SRLAT, V2_PIN_SRCLK, V2_PIN_SRDAT, K ? (1<<sid) : 0);
 
 	} else { // on expander
-		// todo: handle expander
+		// todo: handle latch expander
 	}
 }
 

@@ -1236,7 +1236,6 @@ void check_weather() {
 		// if last successful weather call timestamp is more than allowed threshold
 		// and if the selected adjustment method is not one of the manual methods
 		// reset watering percentage to 100
-		// todo: the firmware currently needs to be explicitly aware of which adjustment methods, this is not ideal
 		os.checkwt_success_lasttime = 0;
 		unsigned char method = os.iopts[IOPT_USE_WEATHER];
 		if(!(method==WEATHER_METHOD_MANUAL || method==WEATHER_METHOD_AUTORAINDELAY || method==WEATHER_METHOD_MONTHLY)) {
@@ -1487,8 +1486,10 @@ void handle_master_adjustments(time_os_t curr_time, RuntimeQueueStruct *q, unsig
 /** Scheduler
  * This function loops through the queue
  * and schedules the start time of each station
+ * If preempt is 1, new stations (whose st=0) will be scheduled
+ * preemptively, before existing queued stations
  */
-void schedule_all_stations(time_os_t curr_time) {
+void schedule_all_stations(time_os_t curr_time, unsigned char preempt) {
 	ulong con_start_time = curr_time;   // concurrent start time
 	// if the queue is paused, make sure the start time is after the scheduled pause ends
 	if (os.status.pause_state) {
@@ -1509,18 +1510,78 @@ void schedule_all_stations(time_os_t curr_time) {
 	for(unsigned char i=1;i<NUM_SEQ_GROUPS;i++) {
 		stagger[i] += stagger[i-1]; // accumulate stagger time
 	}
+
 	ulong seq_start_times[NUM_SEQ_GROUPS];  // sequential start times
-	for(unsigned char i=0;i<NUM_SEQ_GROUPS;i++) {
-		seq_start_times[i] = con_start_time+stagger[i];
-		// if the sequential queue already has stations running
-		if (pd.last_seq_stop_times[i] > curr_time) {
-			seq_start_times[i] = pd.last_seq_stop_times[i] + station_delay;
+	ulong seq_adjustments[NUM_SEQ_GROUPS];  // adjustment amounts for insert-to-front
+	memset(seq_adjustments, 0, sizeof(seq_adjustments));
+	unsigned char re = os.iopts[IOPT_REMOTE_EXT_MODE];
+
+	// If preempt mode, calculate adjustment amounts first
+	if (preempt) {
+		// First pass: calculate how much time new zones will need for each sequential group
+		for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
+			if(q->st) continue; // skip already scheduled zones
+			if(!q->dur) continue; // skip zones marked for reset
+
+			gid = os.get_station_gid(q->sid);
+
+			// Only calculate adjustments for sequential stations
+			if (os.is_sequential_station(q->sid) && !re) {
+				seq_adjustments[gid] += q->dur + station_delay;
+			}
+		}
+
+		// Second pass: adjust existing queued zones (those with st > 0)
+		for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
+			if(!q->st) continue; // skip new zones (will be scheduled later)
+			if(!q->dur) continue; // skip zones marked for reset
+
+			// Only adjust sequential stations
+			if (!os.is_sequential_station(q->sid) || re) continue;
+
+			gid = os.get_station_gid(q->sid);
+			ulong adjustment = seq_adjustments[gid] + stagger[gid];
+			if (adjustment == 0) continue; // no adjustment needed for this group
+
+			// Only adjust sequential stations in the same group
+			// If station is currently running
+			if (curr_time >= q->st && curr_time < q->st + q->dur) {
+				turn_off_station(q->sid, curr_time); // TODO: double check the logic
+				ulong remaining = q->dur - (curr_time - q->st);
+				q->st = curr_time + adjustment;
+				q->dur = remaining;
+				q->deque_time += adjustment;
+			}
+			// If station is waiting to run
+			else if (curr_time < q->st) {
+				q->st += adjustment;
+				q->deque_time += adjustment;
+			}
+			// Update last_seq_stop_times
+			if (q->st + q->dur > pd.last_seq_stop_times[gid]) {
+				pd.last_seq_stop_times[gid] = q->st + q->dur;
+			}
+		}
+
+		// Set sequential start times to current time (or after pause)
+		for(unsigned char i=0;i<NUM_SEQ_GROUPS;i++) {
+			seq_start_times[i] = con_start_time + stagger[i];
 		}
 	}
+	else {
+		// Original behavior: append new zones after existing ones
+		for(unsigned char i=0;i<NUM_SEQ_GROUPS;i++) {
+			seq_start_times[i] = con_start_time + stagger[i];
+			// if the sequential queue already has stations running
+			if (pd.last_seq_stop_times[i] > curr_time) {
+				seq_start_times[i] = pd.last_seq_stop_times[i] + station_delay;
+			}
+		}
+	}
+
 	con_start_time += (stagger[NUM_SEQ_GROUPS-1] + 1); // shift con_start_time to be 1 second after accumulated stagger time
 
-	unsigned char re = os.iopts[IOPT_REMOTE_EXT_MODE];
-	// go through runtime queue and calculate start time of each station
+	// Third pass (or second pass if !preempt): schedule new zones (those with st=0)
 	for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
 		if(q->st) continue; // if this queue element has already been scheduled, skip
 		if(!q->dur) continue; // if the element has been marked to reset, skip
@@ -1550,6 +1611,17 @@ void schedule_all_stations(time_os_t curr_time) {
 			}
 		}
 	}
+	/*DEBUG_PRINT("en:");
+	for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
+		DEBUG_PRINT("[");
+		DEBUG_PRINT(q->sid);
+		DEBUG_PRINT(",");
+		DEBUG_PRINT(q->dur);
+		DEBUG_PRINT(",");
+		DEBUG_PRINT(q->st);
+		DEBUG_PRINT("]");
+	}
+	DEBUG_PRINTLN("");*/
 }
 
 /** Immediately reset all stations

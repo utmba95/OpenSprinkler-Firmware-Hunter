@@ -1771,6 +1771,7 @@ void server_json_status(OTF_PARAMS_DEF)
  * en: enable (0 or 1)
  * t:  timer (required if en=1)
  * ssta: shift remaining stations
+ * pre: preemptive running (0 or 1 -- 1 means the station will be run ahead of existing scheduled zones)
  */
 void server_change_manual(OTF_PARAMS_DEF) {
 #if defined(USE_OTF)
@@ -1802,6 +1803,11 @@ void server_change_manual(OTF_PARAMS_DEF) {
 			if (timer==0 || timer>64800) {
 				handle_return(HTML_DATA_OUTOFBOUND);
 			}
+
+			unsigned char preempt = 0;
+			if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
+				preempt=(unsigned char)atoi(tmp_buffer);
+			}
 			// schedule manual station
 			// skip if the station is a master station
 			// (because master cannot be scheduled independently)
@@ -1822,7 +1828,7 @@ void server_change_manual(OTF_PARAMS_DEF) {
 				q->dur = timer;
 				q->sid = sid;
 				q->pid = 99;  // testing stations are assigned program index 99
-				schedule_all_stations(curr_time);
+				schedule_all_stations(curr_time, preempt);
 			} else {
 				handle_return(HTML_NOT_PERMITTED);
 			}
