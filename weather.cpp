@@ -207,6 +207,12 @@ void GetWeather() {
 		*colon = '\0';  // null-terminate hostname
 		port = atoi(colon + 1);
 	}
+
+	DEBUG_PRINT(host_start);
+	DEBUG_PRINT(":");
+	DEBUG_PRINT(port);
+	DEBUG_PRINT("|");
+	DEBUG_PRINTLN(use_ssl?"ssl":"");
 #endif
 
 	strcat(ether_buffer, " HTTP/1.0\r\nHOST: ");

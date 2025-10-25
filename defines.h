@@ -79,6 +79,13 @@ typedef unsigned long ulong;
 #define NOTIFY_FLOW_ALERT      0x0200
 #define NOTIFY_CURR_ALERT      0x0400
 
+/** Queue Insertion Mode */
+enum {
+	QUEUE_INSERT_END = 0,
+	QUEUE_INSERT_FRONT,
+	QUEUE_REPLACE
+};
+
 enum {
 	CURR_ALERT_TYPE_UNDER = 0,		// undercurrent when running a station
 	CURR_ALERT_TYPE_OVER_STATION,	// overcurrent when turning on a station

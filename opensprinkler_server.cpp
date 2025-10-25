@@ -523,11 +523,11 @@ void server_change_board_attrib(const OTF::Request &req, char header, unsigned c
 void server_change_board_attrib(char *p, char header, unsigned char *attrib)
 #endif
 {
-	char tbuf2[5] = {0, 0, 0, 0, 0};
+	char tbuf2[6] = {0};
 	unsigned char bid;
 	tbuf2[0]=header;
 	for(bid=0;bid<os.nboards;bid++) {
-		snprintf(tbuf2+1, 3, "%d", bid);
+		snprintf(tbuf2+1, 4, "%d", bid);
 		if(findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, tbuf2)) {
 			attrib[bid] = atoi(tmp_buffer);
 		}
@@ -540,13 +540,13 @@ void server_change_stations_attrib(const OTF::Request &req, char header, unsigne
 void server_change_stations_attrib(char *p, char header, unsigned char *attrib)
 #endif
 {
-	char tbuf2[6] = {0, 0, 0, 0, 0, 0};
+	char tbuf2[6] = {0};
 	unsigned char bid, s, sid;
 	tbuf2[0]=header;
 	for(bid=0;bid<os.nboards;bid++) {
 		for(s=0;s<8;s++) {
 			sid=bid*8+s;
-			snprintf(tbuf2+1, 3, "%d", sid);
+			snprintf(tbuf2+1, 4, "%d", sid);
 			if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, tbuf2)) {
 				attrib[sid] = atoi(tmp_buffer);
 			}
@@ -578,7 +578,7 @@ void server_change_stations(OTF_PARAMS_DEF) {
 	char tbuf2[5] = {'s', 0, 0, 0, 0};
 	// process station names
 	for(sid=0;sid<os.nstations;sid++) {
-		snprintf(tbuf2+1, 3, "%d", sid);
+		snprintf(tbuf2+1, 4, "%d", sid);
 		if(findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, tbuf2)) {
 			#if !defined(USE_OTF)
 			urlDecode(tmp_buffer);
@@ -660,13 +660,14 @@ uint16_t parse_listdata(char **p) {
 	return (uint16_t)atol(tmp_buffer);
 }
 
-void manual_start_program(unsigned char, unsigned char);
+void manual_start_program(unsigned char, unsigned char, unsigned char);
 /** Manual start program
  * Command: /mp?pw=xxx&pid=xxx&uwt=xxx
  *
  * pw:	password
  * pid: program index (0 refers to the first program)
  * uwt: use weather (i.e. watering percentage)
+ * pre: queue mode (0: append; 1: insert at front; 2: replace (default) )
  */
 void server_manual_program(OTF_PARAMS_DEF) {
 #if defined(USE_OTF)
@@ -688,10 +689,18 @@ void server_manual_program(OTF_PARAMS_DEF) {
 		if(tmp_buffer[0]=='1') uwt = 1;
 	}
 
-	// reset all stations and prepare to run one-time program
-	reset_all_stations_immediate();
+	unsigned char pre = QUEUE_REPLACE;
+	if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
+		pre=(unsigned char)atoi(tmp_buffer);
+	}
+	DEBUG_PRINT("pre=");
+	DEBUG_PRINTLN(pre);
+	if (pre == QUEUE_REPLACE) {
+		// reset all stations and clear queue
+		reset_all_stations_immediate();
+	}
 
-	manual_start_program(pid+1, uwt);
+	manual_start_program(pid+1, uwt, pre);
 
 	handle_return(HTML_SUCCESS);
 }
@@ -729,9 +738,6 @@ void server_change_runonce(OTF_PARAMS_DEF) {
 	if(!found)	handle_return(HTML_DATA_MISSING);
 	pv+=3;
 #endif
-
-	// reset all stations and prepare to run one-time program
-	reset_all_stations_immediate();
 
 	ProgramStruct prog, annoprog;
 	unsigned char ns = os.nstations;
@@ -802,14 +808,26 @@ void server_change_runonce(OTF_PARAMS_DEF) {
 	//No repeat count defined or first repeat --> use old API
 	unsigned char sid, bid, s;
 	boolean match_found = false;
+
+	unsigned char wl = 100;
+	if(findKeyVal(FKV_SOURCE,tmp_buffer,TMP_BUFFER_SIZE,PSTR("uwt"),true)){
+		if(tmp_buffer[0]=='1') wl = os.iopts[IOPT_WATER_PERCENTAGE];
+	}
+
+	unsigned char pre = QUEUE_REPLACE;
+	if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
+		pre=(unsigned char)atoi(tmp_buffer);
+	}
+	DEBUG_PRINT("pre=");
+	DEBUG_PRINTLN(pre);
+	if (pre == QUEUE_REPLACE) {
+		// reset all stations and clear queue
+		reset_all_stations_immediate();
+	}
+
 	for(unsigned char oi=0;oi<ns;oi++) {
 		sid=order[oi];
-		dur=prog.durations[sid];
-		if(findKeyVal(FKV_SOURCE,tmp_buffer,TMP_BUFFER_SIZE,PSTR("uwt"),true)){
-			if((uint16_t)atol(tmp_buffer)){
-				dur = dur * os.iopts[IOPT_WATER_PERCENTAGE] / 100;
-			}
-		}
+		dur=prog.durations[sid]*wl/100;
 		bid=sid>>3;
 		s=sid&0x07;
 		// if non-zero duration is given
@@ -826,7 +844,7 @@ void server_change_runonce(OTF_PARAMS_DEF) {
 		}
 	}
 	if(match_found) {
-		schedule_all_stations(os.now_tz());
+		schedule_all_stations(os.now_tz(), pre);
 		handle_return(HTML_SUCCESS);
 	}
 

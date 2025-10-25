@@ -229,7 +229,7 @@ void manualRun(char *message){
 }
 
 //handles /mp command
-void manual_start_program(unsigned char, unsigned char);
+void manual_start_program(unsigned char, unsigned char, unsigned char);
 void programStart(char *message){
 	if(!findKeyVal(message, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pid"), true)){
 		DEBUG_LOGF("Program ID missing.\r\n")
@@ -246,9 +246,18 @@ void programStart(char *message){
 		if(tmp_buffer[0]=='1') uwt = 1;
 	}
 
-	reset_all_stations_immediate();
+	unsigned char pre = QUEUE_REPLACE;
+	if (findKeyVal(message, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
+		pre=(unsigned char)atoi(tmp_buffer);
+	}
 
-	manual_start_program(pid+1, uwt);
+	if (pre == QUEUE_REPLACE) {
+		// reset all stations and clear queue
+		reset_all_stations_immediate();
+	}
+
+	manual_start_program(pid+1, uwt, pre);
+
 	return;
 }
 
@@ -268,13 +277,25 @@ void runOnceProgram(char *message){
 	}
 	pv+=3;
 
-	reset_all_stations_immediate();
-
 	unsigned char sid, bid, s;
 	uint16_t dur;
 	boolean match_found = false;
+	unsigned char wl = 100;
+	if(findKeyVal(message,tmp_buffer,TMP_BUFFER_SIZE,PSTR("uwt"),true)){
+		if(tmp_buffer[0]=='1') wl = os.iopts[IOPT_WATER_PERCENTAGE];
+	}
+
+	unsigned char pre = QUEUE_REPLACE;
+	if (findKeyVal(message, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
+		pre=(unsigned char)atoi(tmp_buffer);
+	}
+	if (pre == QUEUE_REPLACE) {
+		// reset all stations and clear queue
+		reset_all_stations_immediate();
+	}
+
 	for(sid = 0; sid < os.nstations; sid++){
-		dur = parse_listdata(&pv);
+		dur = parse_listdata(&pv)*wl/100;
 		bid = sid >> 3;
 		s = sid&0x07;
 
@@ -290,7 +311,7 @@ void runOnceProgram(char *message){
 		}
 	}
 	if(match_found){
-		schedule_all_stations(os.now_tz());
+		schedule_all_stations(os.now_tz(), pre);
 		return;
 	}
 	return;

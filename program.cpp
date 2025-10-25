@@ -475,12 +475,12 @@ void ProgramStruct::gen_station_runorder(uint16_t runcount, unsigned char *order
 			break;
 		}
 	}
-	DEBUG_PRINT("station order:[");
+	/*DEBUG_PRINT("station order:[");
 	for(i=0;i<ns;i++) {
 		DEBUG_PRINT(order[i]);
 		DEBUG_PRINT(",");
 	}
-	DEBUG_PRINTLN("]");
+	DEBUG_PRINTLN("]");*/
 }
 
 // convert absolute remainder (reference time 1970 01-01) to relative remainder (reference time today)

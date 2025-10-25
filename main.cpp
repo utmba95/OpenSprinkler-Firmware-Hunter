@@ -72,7 +72,7 @@
 
 const char *user_agent_string = "OpenSprinkler/" TOSTRING(OS_FW_VERSION) "#" TOSTRING(OS_FW_MINOR);
 
-void manual_start_program(unsigned char, unsigned char);
+void manual_start_program(unsigned char, unsigned char, unsigned char);
 
 // Small variations have been added to the timing values below
 // to minimize conflicting events
@@ -247,7 +247,7 @@ void ui_state_machine() {
 			if (button & BUTTON_FLAG_HOLD) {  // holding B1
 				if (digitalReadExt(PIN_BUTTON_3)==0) { // if B3 is pressed while holding B1, run a short test (internal test)
 					if(!ui_confirm(PSTR("Start 2s test?"))) {ui_state = UI_STATE_DEFAULT; break;}
-					manual_start_program(255, 0);
+					manual_start_program(255, 0, QUEUE_REPLACE);
 				} else if (digitalReadExt(PIN_BUTTON_2)==0) { // if B2 is pressed while holding B1, display gateway IP
 					#if defined(USE_SSD1306)
 						os.lcd.setAutoDisplay(false);
@@ -388,7 +388,7 @@ void ui_state_machine() {
 		if ((button & BUTTON_MASK)==BUTTON_3) {
 			if (button & BUTTON_FLAG_HOLD) {
 				// start
-				manual_start_program(ui_state_runprog, 0);
+				manual_start_program(ui_state_runprog, 0, QUEUE_INSERT_FRONT);
 				ui_state = UI_STATE_DEFAULT;
 			} else {
 				ui_state_runprog = (ui_state_runprog+1) % (pd.nprograms+1);
@@ -606,7 +606,6 @@ void do_loop()
 			}
 		}
 	}
-
 #endif
 
 	static time_os_t last_time = 0;
@@ -855,10 +854,10 @@ void do_loop()
 			reset_all_stations_immediate(); // immediately stop all stations
 		}
 		if (pswitch & 0x01) {
-			if(pd.nprograms > 0)	manual_start_program(1, 0);
+			if(pd.nprograms > 0)	manual_start_program(1, 0, QUEUE_INSERT_FRONT);
 		}
 		if (pswitch & 0x02) {
-			if(pd.nprograms > 1)	manual_start_program(2, 0);
+			if(pd.nprograms > 1)	manual_start_program(2, 0, QUEUE_INSERT_FRONT);
 		}
 
 		// ====== Schedule program data ======
@@ -955,19 +954,6 @@ void do_loop()
 			// calculate start and end time
 			if (match_found) {
 				schedule_all_stations(curr_time);
-
-				// For debugging: print out queued elements
-				/*DEBUG_PRINT("en:");
-				for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
-					DEBUG_PRINT("[");
-					DEBUG_PRINT(q->sid);
-					DEBUG_PRINT(",");
-					DEBUG_PRINT(q->dur);
-					DEBUG_PRINT(",");
-					DEBUG_PRINT(q->st);
-					DEBUG_PRINT("]");
-				}
-				DEBUG_PRINTLN("");*/
 			}
 		}//if_check_current_minute
 
@@ -1611,7 +1597,9 @@ void schedule_all_stations(time_os_t curr_time, unsigned char preempt) {
 			}
 		}
 	}
-	/*DEBUG_PRINT("en:");
+
+	// For debugging: print out queued elements
+	DEBUG_PRINTLN("queue:");
 	for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
 		DEBUG_PRINT("[");
 		DEBUG_PRINT(q->sid);
@@ -1619,9 +1607,15 @@ void schedule_all_stations(time_os_t curr_time, unsigned char preempt) {
 		DEBUG_PRINT(q->dur);
 		DEBUG_PRINT(",");
 		DEBUG_PRINT(q->st);
-		DEBUG_PRINT("]");
+		DEBUG_PRINT("(");
+		DEBUG_PRINT(hour(q->st));
+		DEBUG_PRINT(":");
+		DEBUG_PRINT(minute(q->st));
+		DEBUG_PRINT(":");
+		DEBUG_PRINT(second(q->st));
+		DEBUG_PRINTLN(")]");
 	}
-	DEBUG_PRINTLN("");*/
+	DEBUG_PRINTLN("");
 }
 
 /** Immediately reset all stations
@@ -1630,6 +1624,7 @@ void schedule_all_stations(time_os_t curr_time, unsigned char preempt) {
  * overcurrent situation to quickly turn off zones that are affected
  */
 void reset_all_stations_immediate(bool running_ones_only) {
+	DEBUG_PRINTLN("reset_all_station_immediate");
 	if(running_ones_only) {
 		RuntimeQueueStruct *q = NULL;
 		time_os_t currtime = os.now_tz();
@@ -1662,6 +1657,7 @@ void reset_all_stations_immediate(bool running_ones_only) {
  * Stations will be logged
  */
 void reset_all_stations(bool running_ones_only) {
+	DEBUG_PRINTLN("reset_all_stations");
 	if(running_ones_only) {
 		RuntimeQueueStruct *q;
 		time_os_t currtime = os.now_tz();
@@ -1688,9 +1684,8 @@ void reset_all_stations(bool running_ones_only) {
  * If pid==255, this is a short test program (2 second per station)
  * If pid > 0. run program pid-1
  */
-void manual_start_program(unsigned char pid, unsigned char uwt) {
+void manual_start_program(unsigned char pid, unsigned char uwt, unsigned char pre) {
 	boolean match_found = false;
-	reset_all_stations_immediate();
 	ProgramStruct prog;
 	ulong dur;
 	unsigned char sid, bid, s;
@@ -1734,7 +1729,7 @@ void manual_start_program(unsigned char pid, unsigned char uwt) {
 		}
 	}
 	if(match_found) {
-		schedule_all_stations(os.now_tz());
+		schedule_all_stations(os.now_tz(), pre);
 	}
 }
 
