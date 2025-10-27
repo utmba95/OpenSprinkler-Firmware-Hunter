@@ -40,6 +40,14 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Or any recent LTS version
+
+      - name: Install html-minifier-terser
+        run: sudo npm install -g html-minifier-terser
+
       - name: Build PlatformIO Project
         run: pio run --environment d1_mini
 
