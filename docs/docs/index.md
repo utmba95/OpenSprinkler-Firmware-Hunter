@@ -1,12 +1,16 @@
 # OpenSprinkler Firmware and Documentation
 
-This Github repository contains the firmware source code and documentation for OpenSprinkler. For product details, visit [https://opensprinkler.com](https://opensprinkler.io).
+This Github repository contains the firmware source code and documentation for OpenSprinkler.
 
-For official firmware release notes, please go to the [OpenSprinkler Firmware Releases](https://github.com/OpenSprinkler/OpenSprinkler-Firmware/releases) page on GitHub.
+* For product details, visit [https://opensprinkler.com](https://opensprinkler.com).
+* For firmware release notes, visit the [OpenSprinkler Firmware Releases](https://github.com/OpenSprinkler/OpenSprinkler-Firmware/releases) page on GitHub.
 
 ---
 
-## Firmware Compilation Instructions
+## Compile the Firmware for OpenSprinkler v3.x and v2.3
+
+The firmware compilation instructions below are for OpenSprinkler **v3.x and v2.3** only.
+<br>For RPi and Linux-based OpenSprinkler (OSPi), follow the [instructions are here](https://openthings.freshdesk.com/support/solutions/articles/5000631599-installing-and-updating-the-unified-firmware-on-ospi).
 
 ### Environment Setup
 1.  Download and unzip (or git clone) this (`OpenSprinkler-Firmware`) repository.
@@ -19,6 +23,7 @@ For official firmware release notes, please go to the [OpenSprinkler Firmware Re
 1.  In VS Code, click `File -> Open Folder` and select the `OpenSprinkler-Firmware` folder.
 2.  PlatformIO will recognize the `platformio.ini` file in that folder, which contains all the libraries and settings needed to compile the firmware.
 3.  Click the **PlatformIO: Build** button (with the checkmark icon ✓) in the blue status bar at the bottom of the screen to build the firmware.
+4.  The default build environment is for OpenSprinkler v3.x (`env:d1_mini`). To build for OpenSprinkler v2.3 (ATmega1284), switch to `env:sanguino_atmega1284p`.
 
 ---
 

@@ -60,6 +60,15 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install html-minifier-terser
+        run: npm i -g html-minifier-terser@^7
+
       - name: Build Script
         run: sudo ./build.sh -s demo
 
