@@ -81,9 +81,9 @@ typedef unsigned long ulong;
 
 /** Queue Insertion Mode */
 enum {
-	QUEUE_INSERT_END = 0,
-	QUEUE_INSERT_FRONT,
-	QUEUE_REPLACE
+	QUEUE_OPTION_APPEND = 0,
+	QUEUE_OPTION_INSERT_FRONT,
+	QUEUE_OPTION_REPLACE
 };
 
 enum {

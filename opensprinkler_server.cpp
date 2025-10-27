@@ -662,12 +662,12 @@ uint16_t parse_listdata(char **p) {
 
 void manual_start_program(unsigned char, unsigned char, unsigned char);
 /** Manual start program
- * Command: /mp?pw=xxx&pid=xxx&uwt=xxx
+ * Command: /mp?pw=xxx&pid=xx&uwt=x&qo=x
  *
  * pw:	password
  * pid: program index (0 refers to the first program)
  * uwt: use weather (i.e. watering percentage)
- * pre: queue mode (0: append; 1: insert at front; 2: replace (default) )
+ * qo: queue option (0: append; 1: insert at front; 2: replace (default) )
  */
 void server_manual_program(OTF_PARAMS_DEF) {
 #if defined(USE_OTF)
@@ -689,18 +689,16 @@ void server_manual_program(OTF_PARAMS_DEF) {
 		if(tmp_buffer[0]=='1') uwt = 1;
 	}
 
-	unsigned char pre = QUEUE_REPLACE;
-	if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
-		pre=(unsigned char)atoi(tmp_buffer);
+	unsigned char qo = QUEUE_OPTION_REPLACE;
+	if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("qo"), true)) {
+		qo=(unsigned char)atoi(tmp_buffer);
 	}
-	DEBUG_PRINT("pre=");
-	DEBUG_PRINTLN(pre);
-	if (pre == QUEUE_REPLACE) {
+	if (qo == QUEUE_OPTION_REPLACE) {
 		// reset all stations and clear queue
 		reset_all_stations_immediate();
 	}
 
-	manual_start_program(pid+1, uwt, pre);
+	manual_start_program(pid+1, uwt, qo);
 
 	handle_return(HTML_SUCCESS);
 }
@@ -814,13 +812,11 @@ void server_change_runonce(OTF_PARAMS_DEF) {
 		if(tmp_buffer[0]=='1') wl = os.iopts[IOPT_WATER_PERCENTAGE];
 	}
 
-	unsigned char pre = QUEUE_REPLACE;
-	if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
-		pre=(unsigned char)atoi(tmp_buffer);
+	unsigned char qo = QUEUE_OPTION_REPLACE;
+	if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("qo"), true)) {
+		qo=(unsigned char)atoi(tmp_buffer);
 	}
-	DEBUG_PRINT("pre=");
-	DEBUG_PRINTLN(pre);
-	if (pre == QUEUE_REPLACE) {
+	if (qo == QUEUE_OPTION_REPLACE) {
 		// reset all stations and clear queue
 		reset_all_stations_immediate();
 	}
@@ -844,7 +840,7 @@ void server_change_runonce(OTF_PARAMS_DEF) {
 		}
 	}
 	if(match_found) {
-		schedule_all_stations(os.now_tz(), pre);
+		schedule_all_stations(os.now_tz(), qo);
 		handle_return(HTML_SUCCESS);
 	}
 
@@ -1782,14 +1778,14 @@ void server_json_status(OTF_PARAMS_DEF)
 
 /**
  * Test station (previously manual operation)
- * Command: /cm?pw=xxx&sid=x&en=x&t=x&ssta=x
+ * Command: /cm?pw=xxx&sid=x&en=x&t=x&ssta=x&qo=x
  *
  * pw: password
  * sid:station index (starting from 0)
  * en: enable (0 or 1)
  * t:  timer (required if en=1)
  * ssta: shift remaining stations
- * pre: preemptive running (0 or 1 -- 1 means the station will be run ahead of existing scheduled zones)
+ * qo: queuing option (0: append after others; 1: run now and pause others)
  */
 void server_change_manual(OTF_PARAMS_DEF) {
 #if defined(USE_OTF)
@@ -1822,9 +1818,9 @@ void server_change_manual(OTF_PARAMS_DEF) {
 				handle_return(HTML_DATA_OUTOFBOUND);
 			}
 
-			unsigned char preempt = 0;
-			if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
-				preempt=(unsigned char)atoi(tmp_buffer);
+			unsigned char qo = 0;
+			if (findKeyVal(FKV_SOURCE, tmp_buffer, TMP_BUFFER_SIZE, PSTR("qo"), true)) {
+				qo=(unsigned char)atoi(tmp_buffer);
 			}
 			// schedule manual station
 			// skip if the station is a master station
@@ -1846,7 +1842,7 @@ void server_change_manual(OTF_PARAMS_DEF) {
 				q->dur = timer;
 				q->sid = sid;
 				q->pid = 99;  // testing stations are assigned program index 99
-				schedule_all_stations(curr_time, preempt);
+				schedule_all_stations(curr_time, qo);
 			} else {
 				handle_return(HTML_NOT_PERMITTED);
 			}

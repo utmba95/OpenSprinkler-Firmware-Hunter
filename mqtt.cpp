@@ -246,17 +246,17 @@ void programStart(char *message){
 		if(tmp_buffer[0]=='1') uwt = 1;
 	}
 
-	unsigned char pre = QUEUE_REPLACE;
-	if (findKeyVal(message, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
-		pre=(unsigned char)atoi(tmp_buffer);
+	unsigned char qo = QUEUE_OPTION_REPLACE;
+	if (findKeyVal(message, tmp_buffer, TMP_BUFFER_SIZE, PSTR("qo"), true)) {
+		qo=(unsigned char)atoi(tmp_buffer);
 	}
 
-	if (pre == QUEUE_REPLACE) {
+	if (qo == QUEUE_OPTION_REPLACE) {
 		// reset all stations and clear queue
 		reset_all_stations_immediate();
 	}
 
-	manual_start_program(pid+1, uwt, pre);
+	manual_start_program(pid+1, uwt, qo);
 
 	return;
 }
@@ -285,11 +285,11 @@ void runOnceProgram(char *message){
 		if(tmp_buffer[0]=='1') wl = os.iopts[IOPT_WATER_PERCENTAGE];
 	}
 
-	unsigned char pre = QUEUE_REPLACE;
-	if (findKeyVal(message, tmp_buffer, TMP_BUFFER_SIZE, PSTR("pre"), true)) {
-		pre=(unsigned char)atoi(tmp_buffer);
+	unsigned char qo = QUEUE_OPTION_REPLACE;
+	if (findKeyVal(message, tmp_buffer, TMP_BUFFER_SIZE, PSTR("qo"), true)) {
+		qo=(unsigned char)atoi(tmp_buffer);
 	}
-	if (pre == QUEUE_REPLACE) {
+	if (qo == QUEUE_OPTION_REPLACE) {
 		// reset all stations and clear queue
 		reset_all_stations_immediate();
 	}
@@ -311,7 +311,7 @@ void runOnceProgram(char *message){
 		}
 	}
 	if(match_found){
-		schedule_all_stations(os.now_tz(), pre);
+		schedule_all_stations(os.now_tz(), qo);
 		return;
 	}
 	return;

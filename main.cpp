@@ -247,7 +247,7 @@ void ui_state_machine() {
 			if (button & BUTTON_FLAG_HOLD) {  // holding B1
 				if (digitalReadExt(PIN_BUTTON_3)==0) { // if B3 is pressed while holding B1, run a short test (internal test)
 					if(!ui_confirm(PSTR("Start 2s test?"))) {ui_state = UI_STATE_DEFAULT; break;}
-					manual_start_program(255, 0, QUEUE_REPLACE);
+					manual_start_program(255, 0, QUEUE_OPTION_REPLACE);
 				} else if (digitalReadExt(PIN_BUTTON_2)==0) { // if B2 is pressed while holding B1, display gateway IP
 					#if defined(USE_SSD1306)
 						os.lcd.setAutoDisplay(false);
@@ -388,7 +388,7 @@ void ui_state_machine() {
 		if ((button & BUTTON_MASK)==BUTTON_3) {
 			if (button & BUTTON_FLAG_HOLD) {
 				// start
-				manual_start_program(ui_state_runprog, 0, QUEUE_INSERT_FRONT);
+				manual_start_program(ui_state_runprog, 0, QUEUE_OPTION_INSERT_FRONT);
 				ui_state = UI_STATE_DEFAULT;
 			} else {
 				ui_state_runprog = (ui_state_runprog+1) % (pd.nprograms+1);
@@ -854,10 +854,10 @@ void do_loop()
 			reset_all_stations_immediate(); // immediately stop all stations
 		}
 		if (pswitch & 0x01) {
-			if(pd.nprograms > 0)	manual_start_program(1, 0, QUEUE_INSERT_FRONT);
+			if(pd.nprograms > 0)	manual_start_program(1, 0, QUEUE_OPTION_INSERT_FRONT);
 		}
 		if (pswitch & 0x02) {
-			if(pd.nprograms > 1)	manual_start_program(2, 0, QUEUE_INSERT_FRONT);
+			if(pd.nprograms > 1)	manual_start_program(2, 0, QUEUE_OPTION_INSERT_FRONT);
 		}
 
 		// ====== Schedule program data ======
@@ -1472,10 +1472,10 @@ void handle_master_adjustments(time_os_t curr_time, RuntimeQueueStruct *q, unsig
 /** Scheduler
  * This function loops through the queue
  * and schedules the start time of each station
- * If preempt is 1, new stations (whose st=0) will be scheduled
+ * If qo>0, new stations (whose st=0) will be scheduled
  * preemptively, before existing queued stations
  */
-void schedule_all_stations(time_os_t curr_time, unsigned char preempt) {
+void schedule_all_stations(time_os_t curr_time, unsigned char qo) {
 	ulong con_start_time = curr_time;   // concurrent start time
 	// if the queue is paused, make sure the start time is after the scheduled pause ends
 	if (os.status.pause_state) {
@@ -1502,8 +1502,8 @@ void schedule_all_stations(time_os_t curr_time, unsigned char preempt) {
 	memset(seq_adjustments, 0, sizeof(seq_adjustments));
 	unsigned char re = os.iopts[IOPT_REMOTE_EXT_MODE];
 
-	// If preempt mode, calculate adjustment amounts first
-	if (preempt) {
+	// If qo>0, new zones will preempt existing, so calculate adjustment amounts first
+	if (qo>0) {
 		// First pass: calculate how much time new zones will need for each sequential group
 		for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
 			if(q->st) continue; // skip already scheduled zones
@@ -1567,7 +1567,7 @@ void schedule_all_stations(time_os_t curr_time, unsigned char preempt) {
 
 	con_start_time += (stagger[NUM_SEQ_GROUPS-1] + 1); // shift con_start_time to be 1 second after accumulated stagger time
 
-	// Third pass (or second pass if !preempt): schedule new zones (those with st=0)
+	// Third pass (or second pass if qo==0): schedule new zones (those with st=0)
 	for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
 		if(q->st) continue; // if this queue element has already been scheduled, skip
 		if(!q->dur) continue; // if the element has been marked to reset, skip
@@ -1684,7 +1684,7 @@ void reset_all_stations(bool running_ones_only) {
  * If pid==255, this is a short test program (2 second per station)
  * If pid > 0. run program pid-1
  */
-void manual_start_program(unsigned char pid, unsigned char uwt, unsigned char pre) {
+void manual_start_program(unsigned char pid, unsigned char uwt, unsigned char qo) {
 	boolean match_found = false;
 	ProgramStruct prog;
 	ulong dur;
@@ -1729,7 +1729,7 @@ void manual_start_program(unsigned char pid, unsigned char uwt, unsigned char pr
 		}
 	}
 	if(match_found) {
-		schedule_all_stations(os.now_tz(), pre);
+		schedule_all_stations(os.now_tz(), qo);
 	}
 }
 
