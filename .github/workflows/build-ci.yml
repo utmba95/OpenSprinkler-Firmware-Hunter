@@ -46,7 +46,7 @@ jobs:
           node-version: '20' # Or any recent LTS version
 
       - name: Install html-minifier-terser
-        run: sudo npm install -g html-minifier-terser
+        run: npm install html-minifier-terser
 
       - name: Build PlatformIO Project
         run: pio run --environment d1_mini
@@ -67,14 +67,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20' # Or any recent LTS version
-
-      - name: Install html-minifier-terser
-        run: sudo npm install -g html-minifier-terser
 
       - name: Build Script
         run: sudo ./build.sh -s demo
