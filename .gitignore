@@ -14,3 +14,4 @@ build-1284/*
 node_modules
 *.json
 !package.json
+.DS_Store
