@@ -186,7 +186,13 @@ void GetWeather() {
 	// Parse protocol and extract host/port
 	char *host_start = host;
 
-#if !defined(OS_AVR)
+#if defined(OS_AVR)
+	if (strncmp_P(host, PSTR("http://"), 7) == 0) {
+		host_start = host + 7;
+	} else if (strncmp_P(host, PSTR("https://"), 8) == 0) { // note that avr does not support https
+		host_start = host + 8;
+	}
+#else
 	bool use_ssl = true;  // default to https
 	int port = 443;       // default to https port
 
@@ -208,11 +214,6 @@ void GetWeather() {
 		port = atoi(colon + 1);
 	}
 
-	DEBUG_PRINT(host_start);
-	DEBUG_PRINT(":");
-	DEBUG_PRINT(port);
-	DEBUG_PRINT("|");
-	DEBUG_PRINTLN(use_ssl?"ssl":"");
 #endif
 
 	strcat(ether_buffer, " HTTP/1.0\r\nHOST: ");

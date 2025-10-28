@@ -1301,7 +1301,7 @@ void server_json_controller_main(OTF_PARAMS_DEF) {
 	bfill.emit_p(PSTR("\"curr\":$D,"), current);
 #endif
 	if(os.iopts[IOPT_SENSOR1_TYPE]==SENSOR_TYPE_FLOW) {
-		bfill.emit_p(PSTR("\"flcrt\":$L,\"flwrt\":$D,"), os.flowcount_rt, FLOWCOUNT_RT_WINDOW);
+		bfill.emit_p(PSTR("\"flcrt\":$L,\"flwrt\":$D,\"flcto\":$L,"), os.flowcount_rt, FLOWCOUNT_RT_WINDOW, flow_count);
 	}
 
 	bfill.emit_p(PSTR("\"sbits\":["));

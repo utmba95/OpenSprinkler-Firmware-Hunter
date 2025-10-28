@@ -1599,6 +1599,7 @@ void schedule_all_stations(time_os_t curr_time, unsigned char qo) {
 	}
 
 	// For debugging: print out queued elements
+#if defined(ENABLE_DEBUG)
 	DEBUG_PRINTLN("queue:");
 	for(q=pd.queue;q<pd.queue+pd.nqueue;q++) {
 		DEBUG_PRINT("[");
@@ -1616,6 +1617,7 @@ void schedule_all_stations(time_os_t curr_time, unsigned char qo) {
 		DEBUG_PRINTLN(")]");
 	}
 	DEBUG_PRINTLN("");
+#endif
 }
 
 /** Immediately reset all stations
@@ -1624,7 +1626,6 @@ void schedule_all_stations(time_os_t curr_time, unsigned char qo) {
  * overcurrent situation to quickly turn off zones that are affected
  */
 void reset_all_stations_immediate(bool running_ones_only) {
-	DEBUG_PRINTLN("reset_all_station_immediate");
 	if(running_ones_only) {
 		RuntimeQueueStruct *q = NULL;
 		time_os_t currtime = os.now_tz();
@@ -1657,7 +1658,6 @@ void reset_all_stations_immediate(bool running_ones_only) {
  * Stations will be logged
  */
 void reset_all_stations(bool running_ones_only) {
-	DEBUG_PRINTLN("reset_all_stations");
 	if(running_ones_only) {
 		RuntimeQueueStruct *q;
 		time_os_t currtime = os.now_tz();
