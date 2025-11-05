@@ -182,7 +182,7 @@ If Reset to AP doesn't work, perform a Factory Reset (see below).
 * Press and hold B3 until the controller reboots and completes the reset.
 * After reset, the default device password is `opendoor`. WiFi is in AP mode.
 
-If your controller is OSPi, see [OSPi-specific instructions]().
+If your controller is OSPi, see [OSPi-specific instructions](#ospi-specific).
 
 ---
 
@@ -205,7 +205,7 @@ See [Blank page troubleshooting](#ui-app-time-and-lcd) below. In Step 4, use the
 
 **WiFi connection issues**
 <span class="vsp1"></span>
-If your OpenSprinkler v3.x fails to join your WiFi network, try these steps:
+If your OpenSprinkler v3.x fails to join or stay connected to your WiFi network, try these steps:
 
 1. **Check the mode:** Is the controller still in **AP** (Access Point) mode (LCD shows 4 lines, with a fast-blinking dot)? If so, follow WiFi Configuration in the user manual.
 2. **Changed router/SSID/password recently?** Follow the [Reset WiFi](#reset-and-configurations) instructions above. 
@@ -239,6 +239,12 @@ If your controller can't connect or stay connected via wired Ethernet, try these
 5. **Set an auto-reboot program:** If the controller connects initially but doesn't stay connected, a work-around is to set an auto-reboot program (daily or any regular interval of your choice). See [Program Annotation]() in the user manual.
 
 **<u>For OSPi</u>:** Networking is managed by RPi. Ensure RPi has adequate power (OSPi supplies up to 500 mA. RPi 3/4/5 may need extra power via USB, otherwise network may be unstable).
+
+---
+
+**I can access the controller on my local network, but not when I am away.**
+<span class="vsp1"></span>
+Remote access requires using an **OpenThings Cloud (OTC) token**. To check OTC status, from the homepage, swipe left to right to open the side menu, tap **System Diagnostics**. Make sure OTC status is **Connected**. In the OpenSprinkler mobile app, use the OTC token (instead of the controller's IP address) for remote access.
 
 ---
 
@@ -301,6 +307,34 @@ OpenSprinkler sets time automatically from two data sources: **your location** (
     * **Device Time** is now editable. Set it, and Save. Note that time will drift without NTP sync.
 
 **<u>For OSPi</u>:** only Steps 1 & 2 apply, as NTP is managed by Raspbian, not by OpenSprinkler firmware.
+
+---
+
+**My zones run at the wrong time.**
+<span class="vsp1"></span>
+Refer to the steps above to verify the controller's time is correct.
+
+---
+
+**A zone runs even though Rain Delay or Rain Sensor is active.**
+<span class="vsp1"></span>
+This is usually caused by that zone being set to `Ignore Rain` or `Ignore Sensor`. These attributes can be found by clicking the ⚙️ icon next to the zone to open its attribute dialog. 
+
+---
+
+**My program didn't run as scheduled.**
+
+* Check if the program's **Enabled** flag is on.
+* Check if the controller's **time is correct**.
+* Check for any active **Rain Delay** or **Rain Sensor**.
+* If the program's **Use Weather** flag is on, check if the current **Watering Level** is 0%, or there is any active **Watering Restriction**.
+* **Enable a notification method** (Email, MQTT, or IFTTT) and turn on the **Program Start** event - you will be alerted when a program is scheduled but skipped due to 0% Watering Level or active Watering Restriction. 
+
+---
+
+**How do I verify the Weather Adjustment is working?**
+<span class="vsp1"></span>
+From the homepage, swipe left to right to open the side menu, tap **System Diagnostics**. It shows **Weather Service Details** including error message, if any.
 
 ---
 
