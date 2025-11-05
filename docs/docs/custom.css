@@ -1,3 +1,8 @@
+.vsp1 { display:block; margin: 6px 0; }
+p + ul,
+p + ol {
+    margin-top: -0.5em; /* Or try 0 or 0.5rem. Adjust as needed! */
+}
 hr.double {
   height: 3px;
   border-top: 4px double #ccc;
@@ -73,7 +78,6 @@ table td {
   margin-right: auto;
   width: 500px;
 }
-
 ul > li {
   margin-bottom: 0.25em; /* Adjust this value as needed */
 }
@@ -83,3 +87,4 @@ ul > li {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+

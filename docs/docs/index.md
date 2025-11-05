@@ -7,7 +7,7 @@ This Github repository contains the firmware source code and documentation for O
 
 ---
 
-## Compile the Firmware for OpenSprinkler v3.x and v2.3
+## Firmware Compilation
 
 The firmware compilation instructions below are for OpenSprinkler **v3.x and v2.3** only.
 <br>For RPi and Linux-based OpenSprinkler (OSPi), follow the [instructions are here](https://openthings.freshdesk.com/support/solutions/articles/5000631599-installing-and-updating-the-unified-firmware-on-ospi).
@@ -27,7 +27,7 @@ The firmware compilation instructions below are for OpenSprinkler **v3.x and v2.
 
 ---
 
-## Firmware Update Instructions
+## Firmware Update
 
 OpenSprinkler firmware supports OTA (over-the-air) updates, allowing you to upload the firmware directly through the web UI.
 
