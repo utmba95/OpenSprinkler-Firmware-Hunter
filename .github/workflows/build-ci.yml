@@ -49,10 +49,10 @@ jobs:
         run: npm install html-minifier-terser
 
       - name: Build PlatformIO Project
-        run: pio run --environment d1_mini
+        run: pio run --environment os3x_esp8266
 
       - name: Move and rename firmware
-        run: mv .pio/build/d1_mini/firmware.bin ./firmware_os_esp8266.bin
+        run: mv .pio/build/os3x_esp8266/firmware.bin ./firmware_os_esp8266.bin
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
