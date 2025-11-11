@@ -1,4 +1,5 @@
 .vsp1 { display:block; margin: 6px 0; }
+.vsp2 { display:block; margin: 50px 0; }
 p + ul,
 p + ol {
     margin-top: -0.5em; /* Or try 0 or 0.5rem. Adjust as needed! */
@@ -10,6 +11,15 @@ hr.double {
 }
 .hl {
   background-color: #d0ead0; /* Light Green */
+}
+.hllight {
+  background-color: #e0e0e0; /* Light Green */
+}
+.hltitle {
+  background-color: #d0ead0; /* A light green color */
+  padding: 6px 8px;
+  border-radius: 4px;
+  display: inline-block; /* Makes the background fit the text */
 }
 .hl_purple {
   background-color: #A000A0;
@@ -24,34 +34,13 @@ hr.double {
   border-radius: 3px;
 }
 .hl_red {
-  background-color: #C02020;
-  color: white;
-  padding: 2px 5px;
-  border-radius: 3px;
+  color: #C02020;
 }
 .hl_orange {
-  background-color: #F28500;
-  color: white;
-  padding: 2px 5px;
-  border-radius: 3px;
+  color: #F28500;
 }
 .hl_green {
   background-color: #209020;
-  color: white;
-  padding: 2px 5px;
-  border-radius: 3px;
-}
-.hl_black {
-  background-color: #d0ead0;
-}
-.hl_white {
-  background-color: #DDDDDD;
-  color: black;
-  padding: 2px 5px;
-  border-radius: 3px;
-}
-.hl_gray {
-  background-color: #555555;
   color: white;
   padding: 2px 5px;
   border-radius: 3px;
@@ -70,7 +59,7 @@ table td {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  width: 325px;
+  width: 350px;
 }
 .center_wider {
   display: block;
@@ -87,4 +76,13 @@ ul > li {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
+.img-border {
+  border: 1px solid #ccc;  /* A light gray border */
+  border-radius: 4px;       /* Optional: nice rounded corners */
+  padding: 4px;             /* Optional: space between image and border */
+}
+/* You could also make a class for a shadow, which often looks nicer */
+.img-shadow {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}

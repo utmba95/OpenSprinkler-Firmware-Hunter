@@ -106,7 +106,7 @@ OS v3.x is compatible with 2.4GHz WiFi. It does **NOT** support 5GHz currently. 
 * [Video Tutorials](https://openthings.freshdesk.com/support/solutions/articles/5000860920-videos-introduction-to-opensprinkler-v3)
 * [GitHub Repository](https://github.com/opensprinkler)
 
----
+<hr class="double">
 
 ### Shipping
 
@@ -134,7 +134,7 @@ Typically within 1 business day (unless noted otherwise or back-ordered). Same-d
 <br>
 Please check our [Terms and Policies](https://opensprinkler.com/terms-and-conditions/)
 
----
+<hr class="double">
 
 ### Installation and Usage
 
@@ -262,7 +262,7 @@ Yes. The firmware supports GPIO/HTTP(S)/RF stations. This allows it to toggle a 
 <br>
 Yes. Current firmware supports an adjustable overcurrent limit, which stops zones from running if the current draw exceeds the limit. It also supports undercurrent alert. Both help detect faulty valves and wiring.
 
----
+<hr class="double">
 
 ### Web Connections and Integration
 
@@ -302,7 +302,7 @@ Yes. Current firmware supports notifications via Email, MQTT and IFTTT (see [sup
 <br>
 Yes. The firmware supports "Remote Stations", a feature that allows one OpenSprinkler to act as a master controller, sending commands to other controllers to open or close their valves.
 
----
+<hr class="double">
 
 ### Technical
 
@@ -313,7 +313,7 @@ OpenSprinkler v3.x is fully assembled and works out of the box. OpenSprinkler Pi
 |     | OS v3.x AC/DC/Latch | OSPi | OSBee |
 |:----|:-------------------|:------------------------|:--------------------------|
 |*Valve Compatibility*|**AC/DC** models both operate 24VAC valves. **DC** additionally support DC non-latching. **Latch** only supports DC latching valves.|24VAC valves only|DC Latching valves only|
-|*Power Source*|**AC** model works with 24VAC adapter only; **DC/Latch** work with DC (6-12VDC) adapter.|24VAC only|USB|
+|*Power Source*|**AC** model works with 24VAC adapter only; **DC/Latch** work with DC (6-24V) adapter.|24VAC only|USB|
 |*Number of Stations*|`8` on main controller, expandable to `72` by linking expanders|`8` on main controller, expandable to `200`.|`3`, not expandable|
 |*Processor*|ESP8266|RPi (user-supplied)|ESP8266|
 |*Connectivity*|WiFi 2.4GHz (and optional wired Ethernet)|RPi's connectivity|WiFi 2.4GHz only|
@@ -323,7 +323,7 @@ OpenSprinkler v3.x is fully assembled and works out of the box. OpenSprinkler Pi
 |*Target*|Everyone|RPi enthusiasts, tinkerers|Small garden projects|
 |*Price*|~$150 USD|~$70 USD (plus the cost of RPi and accessories)|$62 USD|
 |*Power Draw*|0.5-0.9 W|0.5 W + RPi's power|0.5 W|
-|*Dimensions*|**v3.0-3.3**: 140mm×56mm×33mm; **v3.4**: 125mm×79mm×25mm|135mm×105mm×38mm|65mm×65mm×20mm|
+|*Dimensions*|**v3.0-3.3**: 140×56×33 mm<br>**v3.4**: 125×79×25 mm|135×105×38 mm|65×65×20 mm|
 
 ---
 

@@ -1,320 +1,772 @@
-##Firmware 1.2.4 User Manual [Oct 6, 2025]
+## Firmware 2.2.1(4) User Manual [Nov 10, 2025]
 
-OpenGarage is a fully open-source product. Hardware and software details are all published at the [OpenGarage Github repository](https://github.com/opengarage). For additional details, video tutorials, technical support, and user forum, visit [https://opengarage.io](https://opengarage.io).
+### Introduction
 
-### What's New in Firmware 1.2.4?
+**OpenSprinkler** is an open-source, web-based sprinkler/irrigation controller designed as a drop-in replacement for conventional sprinkler controllers that lack web connectivity. Its key benefits include an intuitive user interface, remote access, and smart weather-based watering control. It is ideal for homeowners and businesses in applications such as lawn and garden watering, plant irrigation, drip irrigation, hydroponics etc.
 
-This firmware introduces support for **OpenGarage v2.3+**, a new hardware version that can natively communicate with **Security+ 2.0 and 1.0** openers. This direct communication enables a range of new features, including richer door status reporting and control over the opener's light and remote lock. Here is a detailed list:
+The OpenSprinkler hardware comes in two flavors:
 
-* Auto-detection of Security+ 2.0/1.0.
-* Reporting a complete list of door states: closed, open, stopped (partially open), closing, opening.
-* Control opener's light and remote lock (enable/disable garage remotes).
-* Obstruction sensor reporting.
-* Wall-panel emulation for Security+ 1.0.
-* Redesigned AP-mode WiFi setup page with a sleek new appearance.
-* Built-in web UI now serves minified and compressed assets for quicker loads and reduced flash usage.
-* Firmware update progress indicator.
-* MQTT integration and Blynk UI updated to include the extended door states, light, and remote lock controls.
-* Backward compatibility with older OpenGarage hardware that does not have native support for Security+.
+* **OpenSprinkler v3** – Features built-in WiFi, two independent sensor ports, and an optional wired Ethernet module. It is fully assembled and pre-loaded with firmware.
+* **OpenSprinkler Pi (OSPi)** – Powered by a Raspberry Pi (RPi), requiring some assembly (such as connecting the RPi) and firmware installation.
 
-**NOTE**: This firmware reserves `G05` for Security+ protocol, so it's no longer available for sensors. `G04` is a shared pin that can be assigned as either a switch sensor or a temperature/humidity sensor, but **not both simultaneously**.
+Each controller provides 8 zones, with expansion possible via zone expanders (each adding 16 zones). **OpenSprinkler v3 supports up to 72 zones**, and **OSPi** supports up to **200 zones**.
+
+In addition, OpenSprinkler v3 is available in three power models:
+
+* **AC-powered** – Comes with an <span class="hl_orange">**Orange**</span> terminal block (v3.0-3.3) or <span class="hl_red">**Red**</span> power barrel (v3.4). Requires a 24VAC transformer (NOT included by default; available for purchase as an add-on, or use your own 24VAC transformer).
+* **DC-powered** – Comes with a **Black** power barrel (v3.0-3.3) or **USB-C** connector (v3.4). A compatible power adapter is included for North America. It can operate on 6V–24VDC, including a 12VDC solar panel. Despite DC input power, it is designed to operate 24VAC sprinkler valves, as well as DC non-latching valves.
+* **LATCH** – Comes with a **Black** power barrel and a 7.5VDC adapter for North America. It's specifically designed for use with **latching solenoid valves only**.
 
 <hr class="double">
 
-### Hardware Setup
+### What's New in this Firmware?
 
-!!! warning "OpenGarage is **not waterproof**"
-    If installing outdoors, place it inside a **waterproof enclosure**.
-
-OpenGarage has a built-in ultrasonic distance sensor for detecting door status and car presence, a pushbutton, and a microUSB connector for power.
-
-![OG Hardware](images/og_hardware.jpg){: .center }
-
-#### Step 1: Locate Door-Button Terminals
-
-![Opener Terminals](images/opener_terminals.jpg){: .center }
-
-On **your garage opener's motor unit**, locate the terminals that connect to the **wall button** (also called console or door control). OpenGarage communicates with the opener through these terminals. Most openers have **four** terminals:
-
-  * Two for the **wall-button** — typically colored <span class="hl_red">Red</span> (Signal) and <span class="hl_white">White</span> (Ground). These are the ones OpenGarage connects to.
-  * Two for the **safety sensor** — typically colored <span class="hl_gray">Gray</span> (Signal) and <span class="hl_white">White</span> (Ground).
-
-If you are unsure, or your terminals don't have these colors: simply identify which terminals are connected to your existing wall button, or refer to your opener’s user manual.
-
-#### Step 2: Wiring
-
-![OG Terminals](images/og_terminals.jpg){: .center_wider }
-
-OpenGarage v2.x has four integrated screw terminals. Flip the device over to identify the terminals on the back:
-
-* The **bottom** two connect to your opener's **wall-button** terminals. These are **required**.
-* The **top** two are optional: they can be connected to a magnetic switch sensor.
-
-Use the two-wire cable from your OpenGarage package to connect the **bottom** two screws to your opener's **wall-button** terminals identified in Step 1 above:
-
-  * On OpenGarage **v2.0—2.2**, the terminals are labeled **Door Button Wire1** and **Door Button Wire2**. They are **non-polarized**, so can be connected in either orientation.
-  * On OpenGarage **v2.3+**, they are labeled <span class="hl_red">**Red/Pink (CTRL)**</span> and <span class="hl_white">**White/Green (GND)**</span> respectively. These are <u>**polarized**</u>:
-      * **CTRL** must go to your opener's <span class="hl_red">Red</span> (Signal) terminal
-      * **GND** must go to your opener's <span class="hl_white">White</span> (Ground) terminal.
-      * The included cable uses Pink and Green for internal wire colors. Use **Pink as Red**, and **Green as White**. If using your own cable, they are typically colored Red and White.
-    !!! warning "Voltage Compliance"
-        v2.3+ is designed primarily for **LiftMaster, Chamberlain, and Craftsman** brands, which operate their wall-buttons at 12VDC. If you plan to use it with other brands, make sure your wall-button terminals output **DC only**, and **below 20 VDC**. Applying AC voltage or DC voltage above 20V can permanently damage the v2.3+ circuit. Use v2.2 instead.
-
-To connect the wires:
-
-![Screw Wiring](images/screw_wiring.jpg){: .center_wider }
-
-  * Loosen the screws on the bottom two terminals.
-  * Strip the wire ends to an appropriate length. Then insert the stripped copper wire through the enclosure hole.
-  * Using tweezers, a small screwdriver, or needle-nose pliers, wrap the wire **around the screw at least one full turn**.
-  * Tighten the screw securely.
-  * Repeat for the second terminal.
-  * Trim any excess wire to ensure it doesn't touch nearby solder joints.
-  * Finally, strip the other ends of the cable and insert them into your opener's wall-button terminals, following the color guide.
-
-
-#### Step 3: Mounting
-
-The best location to mount OpenGarage is on the **ceiling**, with the distance sensor facing down. The ideal position depends on how the device senses the door status:
-
-* **For OpenGarage v2.0—2.2**, or **v2.3+ with Security+ set to `None`**: The device uses the distance sensor to detect the door's open status. Therefore, position the device so it has an **unobstructed view of** your garage **door** when it's **open**, and the top of your **car** when the door is **closed**.
-    * <u>**NOTE**</u>: When the door is open, the car status is unavailable, as the door blocks the sensor's view of the car.
-
-![Mounting NoSecurity+](images/og_mounting_nosecurity+.jpg){: .center_wider }
-
-* **For OpenGarage v2.3+** with **Security+ set to `2.0` or `1.0`**: The device obtains the door status directly via the Security+ protocol. The distance sensor is used solely for detecting car presence. Therefore, position the device such that it has an **unobstructed view of your car** at all times, regardless of the door's position.
-    * <u>**NOTE**</u>: Car status remains available whether the door is open or closed.
-
-![Mounting Security+](images/og_mounting_security+.jpg){: .center_wider }
-
-!!! warning "**Areas to Avoid**"
-    Do **NOT** mount the device directly above or too close to the metal garage door rail or chain. These objects can interfere with distance sensor readings.
-
-Once you've chosen a good location, use **screws** or **strong double-sided tape** to mount the device securely.
+* **Support for DC-powered OpenSprinkler v3.4**, the first OpenSprinkler with USB-C. Supports USB PD (Power Delivery) via CH224 and allows **user-defined PD voltage**.
+* **Preemptive Running for Manual Actions:** Manual station runs, Run-once programs, and manually started programs now support user-specified queue options:
+    * **Append**: run after others
+    * **Insert at Front**: run now and pause others
+    * **Replace**: run now and stop others (**default behavior in previous firmwares**).
+* **OSPi GPIO Backend**: Switch from `libgpio` to `lgpio`, for simpler API, compatible with **Raspbian Trixie**, and to avoid `libgpiod` v2 breaking changes.
+* **Smoother Current Readings:** Added exponential moving average (EMA) filtering for stable current sensing.
+* **Flexible Weather Script URL:** Support explicit `http/https` and custom port, making it easy to use custom weather service.
+* **Optimized Static Pages:** Serve AP homepage and firmware update pages as minified and  compressed HTML for faster load times and reduced footprint.
 
 <hr class="double">
 
-### Software Setup
+### Hardware Interface
 
-This section walks you through powering on your OpenGarage, connecting it to your WiFi network, and accessing its web interface for the first time.
+#### OpenSprinkler v3.4 (new) {: .hltitle}
 
-#### Step 1: Power-Up and AP Mode
+![OpenSprinkler v3.4 (new enclosure)](images/os34_hardware_interface.jpg)
 
-* Plug a microUSB cable into the device and connect it to a USB power adapter.
+<hr>
 
-* The first time it powers on (or after a WiFi/factory reset), the device creates an open WiFi Access Point (AP) named: `OG_` followed by the last 6 digits of its MAC address. For example: `OG_67FG8A`. Use your phone, tablet, or computer to find this network and connect to it.
+#### OpenSprinkler v3.0-3.3 {: .hltitle}
 
-#### Step 2: WiFi Configuration
+![OpenSprinkler v3.0-3.3](images/os33_hardware_interface.jpg)
 
-![AP homepage](screenshots/1_ap.jpg){: .center }
+<hr>
 
-* After connecting to the `OG_` network, most smart devices will automatically prompt you to "Sign In".
-    * If you don't see this prompt or "Sign In" page, manually open a web browser and go to `192.168.4.1`.
-* Follow the on-screen instructions (see the attached screenshot below):
-    * **Either select or enter** your WiFi router's name (SSID) and type its password.
-    * **Host Name** *(Optional)* : Enter a custom hostname (e.g. `myog`). This makes it easy to access the device later using a domain name like `http://myog.local`.
-    * **Security+ Detection** *(Optional, OpenGarage v2.3+ only)* : If you have wired your v2.3+ it to your garage opener, click **Detect** to automatically detect the Security+ protocol version. This feature is hidden on OpenGarage v2.2 and earlier as they do not support Security+.
-    * **Cloud Token** *(Optional)* : If you already have a Blynk or OTC token (see the [Cloud Connection](#step-5-cloud-connection) section), enter it here. Otherwise, select `No` and you can configure it later.
-* Click **Submit**. Upon a successful connection, you will hear a short tune from the buzzer. Your WiFi credentials are saved and the device reboots into WiFi **Client Mode**, where it automatically obtains a **Device IP** address from your router. This device IP is typically displayed at the bottom of the screen upon the completion of this step.
+#### OpenSprinkler Pi (OSPi) {: .hltitle}
 
-#### Step 3: Access the Device Locally on Your Network
-
-Now that OpenGarage is connected to your home network, you can access it locally using its device IP.
-
-* Open a browser on a smart device or computer that is connected to the same home WiFi network as OpenGarage, and enter the device IP.
-* **Device Key**: To perform certain actions like triggering the door or changing settings, you need to enter a Device Key.
-
-    !!! info "The Default Device Key is:"
-        <strong>opendoor</strong>
-
-<p></p>
-
-**Finding the Device IP**: If you don't know your OpenGarage's device IP, there are several ways to find it:
-
-* Check your router's **Client List**: Log in to your WiFi router's administration page and look for a list of connected devices. The OpenGarage should appear there with its assigned IP address.
-* **mDNS**: If you entered a custom **Host Name** during WiFi configuration (e.g. `myog`), you can access it using the mDNS name `http://myog.local/` (i.e. the host name followed by `.local/`). If you left the host name empty, it uses the default host name, which is `OG_` followed by the last 6 digits of its MAC address (same as AP-mode SSID). In the example above, it will be `http://OG_67FG8A.local/`.
-* **Audible IP**: Press and hold the onboard pushbutton for **2 to 4 seconds**, then release. The device will beep out its IP address using tones (see [Button Actions](#step-4-button-actions) below).
-
-#### Step 4: Button Actions
-
-The pushbutton on OpenGarage has several useful functions depending on how long you press it:
-
-* **Trigger Relay**: A short click (less than 2 sec) → triggers the onboard relay and consequently garage door action. This is similar to a typical garage door wall button.
-* **Report IP**: Hold 2-4 sec and release → the device IP is reported as sequences of rising notes, pauses, and high-pitch tones for dots. For example: `192.168.1.10` is beeped out as a `C4` (the leading `1`), followed by a pause; then sequence `C4, C#4, D4...` continuously until `G#5`, indicating digit `9`, followed by a pause; then `C4, C#4` and pause, indicating `2`; then a high-pitch tone, indicating a dot; and so on. Count the number of notes in each sequence to determine the digit.
-* **Reset to AP Mode**: Hold 5-9 sec until the LED toggles state (from off to on), then release → resets the device to WiFi AP Mode. This allows you to reconfigure WiFi without losing settings and log data.
-* **Factory Reset**: Hold 10+ sec until the LED turns on and then off → resets the device back to factory default. This erases all settings and data, restoring the device to its original state.
-
-#### Step 5: Cloud Connection
-
-To control and monitor your OpenGarage remotely from anywhere, you'll need to set up a cloud connection. OpenGarage supports two cloud services:
-
-* **OTC** (OpenThings Cloud): Allows full remote access to the built-in web UI. All features are supported except firmware upgrade.
-* **Blynk**: Allows remote status checks and door control, but does **not** allow settings, logs, or firmware upgrade.
-
-!!! info
-    For detailed instructions on setting up and using cloud services, refer to the **[Cloud Connection Support Article](https://openthings.freshdesk.com/a/solutions/articles/5000878722)**.
-
-#### Step 6: Browser, Mobile App, and Home Assistant Integration
-
-* **Browser Access**
-    * OpenGarage provides a [built-in web UI](#built-in-web-interface) accessible directly from any browser using the device's local IP or hostname.
-    * Remote access via browser is also supported through the OTC cloud connection using the [OTC base url](api.md#otc-openthings-token).
-* **Web App**
-    * A lightweight [**OpenGarage Web App**](https://raysfiles.com/og/og_devices.html) is available for conveniently managing **multiple OpenGarage devices**.
-    * It supports both local access (via device IP) and remote access (via Blynk or OTC), and runs entirely in your browser — no installation required.
-* **Native App**
-    * The OpenGarage Mobile App is available for installation in both the iOS App Store and Google Play. It provides a native app interface for door control, status, and multiple device management.
-    * The firmware still works with the Blynk legacy app (officially discontinued but may still be available on third-party websites). Instructions can be [found here](../archive.md#blynk-legacy-app).
-* **Home Assistant Integration**
-    * OpenGarage has an official [Home Assistant integration](https://www.home-assistant.io/integrations/opengarage/) that adds the device as a cover entity. It allows door control, status monitoring, and automation within Home Assistant.
-* **API and MQTT**
-    * OpenGarage exposes a simple, well-documented [HTTP API](api.md#) as well as MQTT support. You can use these to write custom scripts, integrate with third-party apps, or connect through any MQTT client.
+![OpenSprinkler Pi](images/ospi20_hardware_interface.jpg)
 
 <hr class="double">
 
-### Built-in Web Interface
+### Zone Wiring Diagram
 
-#### Homepage
+The diagram below shows how to wire values on the main controller and expanders.
 
-![Homepage](screenshots/2_home.jpg){: .center }
+**Basics**
 
-The homepage displays a real-time overview of your device's status including:
+* Each valve solenoid has two wires. Gather one wire from every valve (across the main controller and any expanders) and bundle them into a **COM (common)** wire. Connect this **COM** wire to the controller's **COM** port (do NOT use GND).
+* OpenSprinkler has **two COM ports**: they are internally connected, so you may use either one.
+* The other wire from each valve goes to its individual zone port (1, 2, 3, ...).
 
-* **Door** status
-* **Vehicle** detection status
-* **Distance** sensor value
-* **Switch** sensor state (*if enabled*)
-* **Obstruction** sensor status (*Security+ 2.0/1.0 only*)
-* **Panel Emulation** mode (*Security+ 1.0 only*)
-* **WiFi Signal** strength
-* **Cloud** connection status
-* **Temperature/Humidity** sensor readings (*if enabled*)
+**Polarity**
 
-You can also perform several key operations including:
+* **AC valves** have no polarity — either lead can be COM or zone wire.
+* **Latching valves** are ***polarized*** — connect the **positive** wire (usually <span class="hl_red">**Red**</span>) to <span class="hl_red">**COM**</span>, and the negative wire (usually **Black**) to a zone port.
+* Some DC non-latching valves are polarized too. Again, positive → COM, negative → zone.
 
-* **Open/Close/Toggle door**
-* **Reboot Device**
-* **Reset WiFi**
-* **Clear Log**.
-* **Toggle Light and Remote Lock** (*Security+ 2.0/1.0 only*)
+**Master Valve / Pump Relay**
 
-All of these actions require the **Device Key** (default: `opendoor`), except when accessed remotely via OTC token, where the key is not required. For convenience, the key is cached in your browser and can be cleared by clicking the ✖ icon next to it.
+* If you have a master valve or pump start relay, connect it to any zone port — OpenSprinkler uses software-defined master/pump zones, so you can configure which zones act as master.
 
-The homepage also provides navigation links to **Edit Options**, **Show Log**, **Firmware Update**, and the **User Manual**.
+![Zone Wiring](images/zone_wiring.jpg)
 
-#### Edit Options
+<hr class="double">
 
-Editing any option requires the Device Key (except when accessed remotely via OTC token). Some options take effect only after a reboot — these are marked `[Effective after reboot]`. The options are divided into three tabs:
+### Installation
 
-##### 1. Basic Tab
+!!! warning "AC Power (International Users)"
+    For **AC-powered** OpenSprinkler, you must use a 24VAC transformer that **matches your country’s mains voltage** standard. An incompatible transformer can damage the controller. If a suitable 24VAC transformer isn't available, consider the **DC-powered** OpenSprinkler instead (6–24VDC input; v3.4 uses USB-C). **Never** connect mains power directly to the controller.
 
-![Basic Tab](screenshots/4_options_basic.jpg){: .center }
+!!! warning "OpenSprinkler is NOT waterproof"
+    If installing outdoors, mount it inside a [**weatherproof enclosure**](https://www.amazon.com/Orbit-57095-Weather-Resistant-Outdoor-Mounted-Controller/dp/B000VYGMF2).
 
-* **Device Name**: A custom name shown on the homepage.
-* **Distance Sensor**: How the device is mounted:
-    * **Ceiling Mount** (default): The most common use, where the device is mounted on the ceiling with the ultrasonic distance sensor facing down.
-    * **Side Mount**: For roll-up doors or when ceiling mount is not feasible: mount the device on the side of the door facing outward.
-* **Security+ Version**: <span class="hl">Available only on **OpenGarage v2.3+** and applies to **LiftMaster, Chamberlain, and Craftsman** brands</span>. You can typically identify the version by the color of the **Learn** button or **antenna wire** on the motor unit:
-    * **2.0**: <span class="hl_yellow">**Yellow**</span>
-    * **1.0**: <span class="hl_purple">Purple</span>, <span class="hl_orange">Orange</span>, or <span class="hl_red">Red</span>
-    * **None**: <span class="hl_green">Green</span>, or any brand not listed above
-    * **Detect**: If you're unsure of your version, click **Detect** to automatically probe and select the correct type.
+!!! info "Video Guides"
+    **Video Guides and Tutorials** are available on the [OpenSprinkler support site](https://support.opensprinkler.com).
 
-    !!! danger
-        The detection can take up to 15 seconds, and **the door may activate or move** during this time. Ensure the door's path is clear before proceeding.
+#### Step 1: Preparation
 
-    !!! warning "Note on Security+ 1.0"
-        In **Security+ 1.0** mode, the device **emulates a smart wall panel** by sending rapid probing signals needed to obtain door status (unless an existing smart wall panel is detected). This disables traditional, non-smart wall-buttons. If this restriction is undesirable, please disable Security+ mode by setting it to `None`.<br>**NOTE**: Security+ 2.0 systems are not affected as they do not require panel emulation.
+Carefully label and remove wires from your existing sprinkler controller as you disconnect it. You will typically find:
 
-* **Door Threshold**: Distance (in `cm`) used to determine if the door is open.
-    * Set it larger than the distance from the ceiling to the door when fully open, but smaller than the ceiling-to-car distance.
-    * Example: if the distance from ceiling to the fully-open door is 30 cm, set the threshold to `50 cm` to provide a reliable margin.
-    * This option is <u>only available</u> if **Security+ Version** is **None**. For Security+ 2.0/1.0, the door status is obtained from the Security+ protocol and not by the distance sensor.
-* **Car Threshold**: Distance (in `cm`) used to determine if a car is detected.
-    * Set it larger than the ceiling-to-car distance, but smaller than ceiling-to-ground distance.
-    * The diagram below illustrates how to set the Door and Car thresholds.
+* **Power supply wires** (if you plan to reuse your existing power supply)
+* A **COM (common) wire**
+* One or more **Zone wires**
+* (Optionally) A **Master Zone / Pump Start Relay** wire
+* (Optionally) **Rain / Soil / Flow Sensor** wires
 
-![Set Thresholds](images/set_thresholds.jpg){: .center }
+---
 
-* **Status Check Interval**: How often (in `seconds`) the device checks all sensors. Default: `1`.
-* **Click Time**: Duration (in `ms`) the relay is held when triggered. Default: `1000 ms`.
-* **Switch Sensor**: (<u>only available</u> if **Security+ Version** is **None**) Configure an optional magnetic sensor (connected between pin `G04` and `GND`) for door detection. Options:
-    * **Normally Closed**: most common type; switch is closed/shorted when door is closed
-    * **Normally Open**: switch is open when door is closed
+#### Step 2: Wiring OpenSprinkler
 
-* **Sensor Logic**: (<u>only available</u> if **Security+ Version** is **None**) If a switch sensor is enabled, you can define how the distance and switch sensors together determine the door status:
-    * Distance Sensor Only
-    * Switch Sensor Only
-    * Distance `AND` Switch — door considered open only if both sensors report open
-    * Distance `OR` Switch — door considered open if either reports open
+Refer to the [Hardware Interface](#hardware-interface) and [Zone Wiring Diagram](#zone-wiring-diagram) sections above.
 
-* **T/H Sensor** `[Effective after reboot]`: Select the type of optional temperature/humidity sensor (requires soldering). Supported sensors:
-    * DHT11/DHT22 (data pin on `G04`)
-    * DS18B20 (data pin on `G04`, requires `10 kΩ` pull-up resistor)
-    * The sensor must be powered by `VCC` (3.3 V) and `GND`
+OpenSprinkler uses **removable terminal blocks** for easy wiring. To detach a block, grab one end firmly, gently wiggle, and pull it out. Insert wires fully, then tighten the screws securely.
 
-    !!! info
-        Because `G04` is a shared pin for sensors, it can be assigned to **either** a switch sensor **or** a temperature/humidity sensor, but **NOT both simultaneously**.
+**Power:**
 
-* **Sound Alarm**: Set the duration for the audible alarm before each door movement.
-    * Includes an option to disable the alarm specifically for door opening.
-* **Log Size**: Number of log records to retain.
-    * After changing, go to the homepage and click **Clear Log** for it to take effect.
+* **OpenSprinkler v3.4 AC:** Plug the 24VAC transformer to the <span class="hl_red">**Red**</span> barrel jack.
+    * If your transformer has bare wire, use the included screw-terminal-to-plug adapter.
+* **OpenSprinkler v3.0-3.3 AC:** Connect the 24VAC wires to the <span class="hl_orange">**Orange**</span> terminal block.
+    * AC has no polarity, so the two wires have no distinction.
+* **OpenSprinkler v3.4 DC:** Plug the USB-C cable to the USB-C port (PWR).
+* **OpenSprinkler v3.0-3.3 DC and Latch:** Insert the DC adapter into the **Black** barrel jack.
+    * Note the **COM** terminal is <span class="hl_red">**positive(+)**</span>. If your valve wires are polarized, positive goes to COM, and negative goes to a zone. 
 
-##### 2. Integration Tab
 
-![Integration Tab](screenshots/5_options_integration.jpg){: .center }
+**Sensors:**
 
-* **Enable Cloud Connection** `[effective after reboot]`: Select **Blynk** or **OTC** for cloud service, and enter the **Cloud Token**. The default **Cloud Server / Port** are:
-    * Blynk: `blynk.openthings.io`, port `8080`
-    * OTC: `ws.cloud.openthings.io`, port `80`
+* **Connect sensor signal wires to SN1 + GND** (or **SN2 + GND** if using a second sensor).
+    * OpenSprinkler uses **GND** (NOT COM) as the common terminal for sensor inputs. **DO NOT** connect sensor signal wires to **COM**.
+* On a **AC-powered model**, if a sensor requires 24VAC power (e.g. wireless sensors), you may connect its **power wires** to COM and GND, which supply 24VAC.
+    * **DC-powered and Latch** models do **NOT** output 24VAC thus cannot power these sensors.
 
-* **Enable MQTT**: Enable MQTT communication by provide the MQTT server URL, port, credentials (optional), and a custom MQTT topic.
-    * If topic is left blank, the device name is used.
+For additional details on specific sensors (rain/soil/flow), refer to [Section ?]() of this manual.
 
-* **Enable Email Notifications**: Set up email notifications by providing an SMTP server, credentials, and recipient address.
-    * For detailed instructions, refer to the [Setting Up Email Notifications Support Article](https://openthings.freshdesk.com/support/solutions/articles/5000889759).
+---
 
-    !!! info
-        When using MQTT or Email Notifications, please ensure all fields are correct. Empty or incorrect values may cause the device to become unresponsive.
+#### Step 3: Zone Expanders (Optional)
 
-* **IFTTT Key**: Webhook service key for IFTTT integration.
-    * Create an [IFTTT](https://ifttt.com/) account, search "Webhook" service and create a key, then copy your key here. You can then create **applets** triggered by the `opengarage` event name, with SMS, email, or push notification as the action. The notification message is passed via parameter `value1`.
+!!! warning "Power Off Before Wiring Expanders"
+    Always **power off the main controller** before making changes to expanders (connecting, disconnecting, reconfiguring).
 
-* **Choose Notification Events**: Select which events generate notifications. Applies to all of Blynk, Email, IFTTT, and MQTT.
+!!! warning "Verify the Correct Port"
+    Check [Zone Wiring Diagram](#zone-wiring-diagram) to verify it's plugged into the correct port. Do **NOT** plug into the port marked **Ether** (that's for Ethernet module)!
 
-* **Automation**: Set up rules to automatically notify you or close the door if it has been left open beyond a certain amount of time, or past a specific UTC time.
-    * Time is in UTC, as the controller does not know your local timezone. Example: to close at 6 PM local (UTC-4), set 22 (6 PM + 4 h = 22 UTC).
-    * A minimum 5-second sound alarm is enforced before auto-close.
+* With the main controller powered off, plug one end of the expander cable into OpenSprinkler’s **Zone Expander** port (keyed; only fits one way).
 
-##### 3. Advanced Tab
+* **Connect the other end of the cable**:
+    * **OpenSprinkler v3:** to either side of the expander (the two ports are equivalent). For multiple expanders, link them with additional cables.
+    * **OpenSprinkler Pi (OSPi):** to the expander's **IN** port. For multiple expanders, daisy-chain by following the **OUT → IN** links.
+* **Set Index:** <img src="../images/dip_switch.png" alt="DIP Switch" style="float: right; margin: 5px 5px 5px 5px;" class="img-shadow">
+    * For **OpenSprinkler v3**, you MUST set a unique index (1-4) for each expander, using the DIP switch on its back (see picture on the right).
+        * `1st` expander: index `1` (DIP switch: `DOWN DOWN`)
+        * `2nd` expander: index `2` (`UP DOWN`)
+        * `3rd` expander: index `3` (`DOWN UP`)
+        * `4th` expander: index `4` (`UP UP`).
+    * For **OSPi**: there is no DIP switch - the expander index is implied by the order the expanders are daisy-chained.
+* **Zone Mapping:**
+    * Main controller: zones `1-8`
+    * `1st` expander: zones `9-24`
+    * `2nd` expander: zones `25-40`
+    * `3rd` expander: zones `41-56`
+    * `4th` expander: zones `57-72`
 
-![Advanced Tab](screenshots/6_options_advanced.jpg){: .center }
+**<u>Select Number of Zones</u>:** The firmware automatically detects the highest expander index, but you still **must manually set the total number of zones** in software settings. You may enable more zones than physically available, to use them as **Virtual Zones** (Remote/HTTP(S)/RF). See [Section ?]()).
 
-* **Read Interval** `[effective after reboot]`: Time (in `ms`) between ultrasonic distance sensor readings. Default: `500 ms`.
-    * Increasing this value can help reduce noise.
+---
 
-* **Sensor Filter** method:
-    * **Median**: Use median of the last 7 readings.
-    * **Consensus**: Average the last 7 readings if their range `(max–min) ≤ margin`; otherwise ignores until stable. **Margin** defines the range tolerance (default: `10 cm`).
-    * If Consensus fails often, increase margin (e.g. `20 cm`) or switch to Median filter.
+#### Step 4: Setting Up WiFi / Ethernet
 
-* **Distance Timeout**: How to handle ultrasonic sensor timeout:
-    * **Ignore** (default): Ignore invalid readings to reduce noise.
-    * **Cap** at the maximum which is `450 cm`.
+**WiFi (OpenSprinkler v3 all versions)**
 
-* **HTTP Port** ` [effective after reboot]`: Custom web server port (default: `80`).
+1. On first boot (or after WiFi reset), OpenSprinkler starts in **AP (Access Point) mode**, broadcasting an SSID like `OS_xxxxxx` shown on the LCD. Connect your phone/computer to this open SSID.
+    * *On Android*: if you see a "WiFi has no Internet" warning, tap Accept to stay connected.
+2. Open a browser and go to `192.168.4.1` to access the **WiFi Configuration** page. Follow the instructions there. Specifically, select (or manually enter) your home WiFi's SSID and its password (this is your router's WiFi password, NOT OpenSprinkler's password!). The BSSID and Channel will be automatically filled, but you may leave them empty if preferred.
+3. Click **Connect**. On successful connection, the controller will reboot into WiFi Station mode.
+4. Press button **B1** on OpenSprinkler to display the **device IP** assigned by your router. Type in that device IP in a **browser** or the **OpenSprinkler mobile app** to access the web interface.
+    * <span class="hl">The default device password is **opendoor**. For security, change this immediately after setup.</span>
 
-* **Hostname** `[effective after reboot]`: Custom local hostname.
-    * If left blank, defaults to the WiFi AP name (refer to [WiFi configuration](#step-2-wifi-configuration)).
-    * Allows access via `http://<hostname>.local/` instead of numeric IP.
+---
 
-* **NTP Server** `[effective after reboot]`: Custom time server; defaults to `pool.ntp.org` if blank.
+**Wired Ethernet (OpenSprinkler v3.2 and later)** 
 
-* **Use Static IP** `[effective after reboot]`: Manually assign a fixed IP instead of DHCP.
-    * Requires manual entry of **Device IP**, **Gateway IP**, **Subnet**, and **DNS1**.
+* **Power off** the main controller. 
+* **OpenSprinkler v3.4:** Firmly plug the ribbon cable connetor into the port on the controller marked **Ether** (it's on the **right** side of the controller).
+    * Do **NOT** plug into the port marked **Expander** - that's for zone expander ONLY!
+    <img src="../images/os33_wired_ether.png" alt="Wired Ether" style="float: right; margin: 5px 5px 5px 5px;" class="img-shadow">
 
-* **Device Key**: Change the Device Key from the default `opendoor` to your own password.
+<span class="vsp2"></span>
+
+* **OpenSprinkler v3.2-3.3:** Firmly plug the ribbon cable connector into the Ethernet module as shown on the right (keyed; only one way to fit).
+* Plug an RJ45 Ethernet cable from your network to the module.
+* Power on the controller. It will detect the network and connect automatically.
+
+
+---
+
+#### Reset WiFi
+* To re-enter AP mode without erasing other settings:
+    * With the controller powered on, press **B3+B2** (first press B3 then while holding B3 quickly press B2, like `Ctrl+C`), and hold until you see **Reset to AP mode?**.
+    * Click **B3** to confirm.
+* You can also reset WiFi from the app/web UI under:
+    * From the homepage: **Edit Options → Reset → Reset WiFi**.
+* If neither of the above works, you need to perform a Factory Reset (see below).
+
+---
+
+#### Reset Device Password
+
+If you forget the device password, you can bypass it using buttons:
+
+1. Power off the controller.
+2. Power it on, and as soon as the OpenSprinkler logo appears, press and hold **B3**. Keep holding until the LCD displays **Setup Options**.
+4. Click **B3** repeatedly until you see **Ignore Password**. Click **B1** to set it to **Yes**.
+5. Press and hold **B3** until the controller reboots.
+
+You can now access the UI without a password. For security, immediately set a new password, and change **Ignore Password** back to **No**.
+
+---
+
+#### Factory Reset
+
+1. Power off the controller.
+2. Power it on, and as soon as the OpenSprinkler logo appears, press and hold **B1**. Keep holding until the LCD displays **Reset?**
+3. Confirm the answer is **Yes**, then press and hold **B3** until the controller reboots.
+
+All settings will be cleared and returned to factory defaults.
+
+<hr class="double">
+
+### LCD Display and Buttons
+
+![OpenSprinkler LCD Display](images/lcd_display.png){: .img-border .img-shadow}
+
+* **Master 1** (if enabled) is shown as the letter `M`; and **Master 2** as `N`.
+* By default the LCD shows the status of the first 8 zones on the main controller (`MC`). Each running zone is displayed with a three-letter animation: `. o O`
+* Clici **B3** to cycle through each group of 8 zones (`E1`, `E2`, `E3`...) on expanders. 
+* When no zones are running, a `(System Idle)` message is shown at the top.
+* When the controller is in **Remote Extension** mode, a radar icon 📡 is shown.
+* When **Pause Queue** or **Rain Delay** is active, a clock icon 🕒 is shown.
+* If **Sensor 1** is configured, a letter is shown to indicate its type:
+    * `r`: Rain sensor
+    * `s`: Soil sensor
+    * `p`: Program switch
+    * `f`: Flow sensor
+    * An activated rain sensor is shown as 🌧️, and active soil sensor as 💧.
+* If **Sensor 2** is configured, its display will follow the same notation as Sensor 1.
+
+**While the controller is running, buttons perform the following functions:**
+
+| Button     | Function |
+|:-----------|:---------|
+|**Click B1**|Display device IP address, port and OTC status|
+|**Click B2**|Display device MAC address|
+|**Click B3**|Switch between the main controller (`MC`) and each group of 8 expanded zones<br>(`E1`, `E2`, `E3` ...).|
+|**Hold B1** |Stop all zones immediately|
+|**Hold B2** |Reboot the controller|
+|**Hold B3** |Manually start an existing or test program|
+|**B1+B2**   |Hold **B1**, then while holding it press **B2**, like `Ctrl+C`. Display gateway (router) IP|
+|**B2+B1**   |Display external (WAN) IP|
+|**B2+B3**   |Display timestamp of the last weather server response|
+|**B3+B2**   |For OpenSprinkler v3: reset to AP mode (for WiFi re-config)|
+|**B1+B3**   |*(Internal testing only)* Start a quick test program (2s per zone)|
+|**B3+B1**   |Display last system reboot timestamp and reboot reason|
+
+<span class="vsp1"></span>
+
+**During booting, <u>while the OpenSprinkler logo is shown</u>, if any button below is pressed:**
+
+* **B1**: start **Factory Reset**.
+* **B2**: start **Internal Test Mode**.
+* **B3**: start **Setup Options**.
+
+<hr class="double">
+
+### Web Interface Overview
+
+OpenSprinkler’s web interface works on phones, tablets, and computers, enabling you to view status, adjust settings, check logs, and edit programs from any modern **web browser** or via the free **OpenSprinkler mobile app** (search **OpenSprinkler** in your app store). 
+
+!!! info "Video Guides"
+    **Video Guides and Tutorials** are available on the [OpenSprinkler support site](https://support.opensprinkler.com).
+
+--- 
+
+**Local Access**
+
+* On the controller, press button **B1** to find its **device IP** and **HTTP port**. We denote the IP as `os-ip` (e.g. `192.168.1.122`).
+* Open a browser and visit `http://os-ip` (e.g. `http://192.168.1.122`). If you changed the HTTP port from the default `80`, include it in the URL (e.g.`http://os-ip:8765`).
+* <span class="hl">The default device password is **opendoor**</span>. For security, change it upon first use.
+* When using the OpenSprinkler mobile app, choose **Manually Add Device**. Enter the device IP.
+* Using the IP to access the controller works as long as you are on the same local network.
+
+--- 
+
+**Remote Access (via OTC)**
+
+* To access the controller remotely, first configure an **OpenThings Cloud (OTC) token** ([Section ?]()).
+* In the OpenSprinkler mobile app, choose **Manually Add Device** and paste the **OTC token** instead of an IP.
+* To access it remotely using a web browser, visit `cloud.openthings.io/forward/v1/token` where `token` is the OTC token ([Section ?]()). 
+* Remote access via OTC does **NOT** need port forwarding on your router.
+
+<hr class="double">
+
+### Homepage
+
+![Homepage Annotations](images/homepage_annotations.jpg)
+
+The homepage provides an overview of all zones, current system status, and weather conditions. You’ll see a **weather icon**, the **device time**, **water level**, a **list of zones** showing their current state, and the **device status** at the bottom.
+
+* The bell icon 🔔 (upper right) appears when notifications are available.
+* The menu icon ☰ (upper left) opens the sidebar menu.
+
+---
+
+#### Sidebar Menu
+
+!!! info "Open the Sidebar"
+    Open the sidebar menu anytime by **swiping left to right**, or tap the ☰ icon at the top-left corner.
+
+* **Manage Sites:** Manage multiple controllers (available in the mobile app).
+* **Export/Import Configuration:** Save or restore all settings and programs. Use this before firmware upgrades or factory resets.
+* **About:** Shows app version, firmware version, and hardware version.
+* **Localization:** Change the display language.
+* **OpenSprinkler.com Login:** (Optional) Log in with your [OpenSprinkler.com](https://opensprinkler.com) account credentials to enable **cloud-synced features** such as station photos, notes, site configurations. (See [Section ?]())
+* **Disable Operation:** Disable zone operations. Use it when the system will be idle for an extended period.
+* **Change Password:** Change the device password.
+* **Reboot OpenSprinkler:** Perform a software reboot.
+* **System Diagnostics:** View detailed diagnostic data, including timestamp and reason of the last reboot, the last weather call, response code, weather data, and OpenThings Cloud (OTC) connection status.
+
+---
+
+#### Device Status
+
+The footer reports system status, prioritizing the following information in order:
+
+1. System enable/disable state
+2. Currently running stations
+3. Active Pause Queue / Rain Delay status
+4. If idle, the Last Run station, or **System Idle** if no such data is available.
+
+Additional data to display:
+
+* If Flow Sensor is enabled → **Current Flow Rate**.
+* If any zones are active → **Total Current Draw** (useful for solenoid diagnosis).
+* If **Overcurrent detected** → an **Overcurrent Alert**.
+
+---
+
+#### Station Cards
+
+Each zone (station) is shown as a card. Tap the gear ⚙️ icon next to a zone name to open its **Attributes** dialog.
+
+![Station Attributes](images/station_attributes_types.jpg){: .img-shadow}
+
+**Basic Tab:**
+
+* **Station Name:** A custom name (up to 32 letters).<br>
+**Annotation:** If a flow sensor is enabled ([Section 5]()) and the last 5 letters represent a numerical value, a **Flow Alert** notification will trigger when the flow rate exceeds this value after the zone finishes. Example: station name is **Front Yard 1.357**, a flow alert will trigger if the flow rate `>1.357` after the zone finishes.
+* **Use Masters:** When enabled, the associated Master zone(s), if defined, will activate whenever this zone runs.
+* **Ignore Rain/Sensor1/Sensor2:** When enabled, the zone will bypass manual rain delay or sensor(s). Unchecked by default.
+* **Disable:** Disable and hide this zone. To unhide, use the [Footer Menu]().
+
+**Advanced Tab:**
+
+* **Sequential Group:** Assign the zone to a **Sequential** group (`A-D`) or the **Parallel** (`P`) group. The zone's group label appears next to its name on the homepage.
+    * By default, all zones belong to **group A**.
+    * Zones in the same sequential group are **automatically serialized** – no two zones run simultaneously.
+    * Zones in different groups can run simultaneously.
+    * Parallel (P) zones can run alongside any other zones.
+    * The sequential group attribute replaces the old per-zone **Sequential** flag, providing more flexible concurrency control.
+
+* **Station Type** (Virtual Zone): Configure special properties so a station can control devices or actions beyond a standard sprinkler valve. These **special/virtual** station types do NOT consume a physical output - you can define them freely up to the controller’s maximum zone count, even without zone expanders.
+    * <span class="hllight">**Standard**</span> (default): Regular sprinkler zone.
+    * <span class="hllight">**RF:**</span> Controls remote RF (Radio Frequency) power sockets via an external transmitter (requires [RFtoy]() for code learning), allowing you to switch powerline devices such as Christmas lights, heaters, pumps.
+    * <span class="hllight">**Remote Station (IP):**</span> Triggers a zone on another OpenSprinkler using its **IP, port, and zone index** (both controllers must **share the same device password**).
+    * <span class="hllight">**Remote Station (OTC):**</span> Same as above but identifies the remote controller by its **OpenThings Cloud token**, ideal for managing devices across different networks. Again, both controllers must share the same password.
+    * <span class="hllight">**GPIO:**</span> Directly toggles an available GPIO pin on the controller (Active High/Low configurable). This type is disabled for controllers that do not have any available GPIO pins.
+    * <span class="hllight">**HTTP:**</span> Sends an HTTP GET request upon zone activity. Provide a `server` (either domain name or IP), `port`, and the `on`/`off` command (excluding the leading slash `/`). Upon zone activation, it sends `server:port/on_command`, and upon deactivation `server:port/off_command`.
+    * <span class="hllight">**HTTPS:**</span> Same as HTTP, but using a secure connection.
+
+---
+
+#### Cloud-Synced Features
+
+![Station Pictures](images/station_pictures.png){: .center }
+
+After signing in with your **OpenSprinkler.com** account (via the sidebar menu), additional **cloud-synced** features become available:
+
+* **Station Photos & Notes:** Capture and assign custom images and notes to each zone.
+* **Site Configuration Sync:** Automatically store and restore your device list and settings across devices, making it easy to manage multiple controllers.
+
+
+<hr class="double">
+
+### Footer Menu
+<img src="../images/footer_menu.png" alt="Footer Menu" width="200" style="float: right; margin: 8px 0px 8px 16px;" class="img-shadow">
+The Footer Menu is available on all pages from the bottom-right (grid icon #️⃣) providing quick access to common actions:
+
+* **Preview Programs** (or keyboard shortcut `Alt+V`)
+* **View Logs** (`Alt+L`)
+* **Change Rain Delay** (`Alt+D`)
+* **Pause Station Runs** (`Alt+U`)
+* **Run-Once Program** (`Alt+R`)
+* **Edit Programs** (`Alt+P`)
+* **Edit Options** (`Alt+O`)
+* **Stop All Stations**
+* **Show/Hide Disabled** (available on the homepage):<br>Toggle visibility of zones that have been disabled.
+
+**Tip:** On laptop/desktop computers, you can also open the menu by pressing `M`.
+
+---
+
+<img src="../images/manually_start_zone.png" alt="Start Zone" width="150" style="float: right; margin: 5px 5px 5px 5px;" class="img-border img-shadow">
+#### Manually Start / Stop a Zone
+
+To **start** a zone manually, click its station card and enter a run time. If another zone in the **same sequential group** is currently running, a **"Run immediately"** checkbox appears to let you choose if you want this zone to run now (and pause other zones in the group), or queue this zone to run after the others finish.
+
+<img src="../images/manually_stop_zone.png" alt="Stop Zone" width="150" style="float: right; margin: 5px 5px 5px 5px;" class="img-border img-shadow">
+To **stop** a zone that's currently running or queued, click its zone card and confirm.
+If there are other queued zones in the **same sequential group**, a **"Move up remaining stations"** checkbox appears to let you choose if you want all remaining zones in that group to shift up, so the next one starts immediately instead of waiting for its original scheduled time.
+
+---
+
+#### Change Rain Delay
+
+Use **Change Rain Delay** in the Footer Menu to set a custom rain delay (in hours). Affected zones stop immediately and remain off until the delay expires. To cancel an active rain delay: click the status bar at the footer, or set a rain delay time of `0`.
+
+---
+
+#### Pause Station Runs
+
+This feature temporarily halts all active and queued zones:
+
+* Running zones stop immediately and automatically resume when the pause timer reaches 0.
+* Start times for queued zones shift accordingly.
+* Programs whose start time falls within the pause window are queued and delayed until the pause ends.
+* During the pause, the footer shows the **Pause Status**.
+
+To **modify or cancel** an active pause:
+
+* Click the status bar in the footer, or
+* Use Footer Menu → **Change Pause**.
+
+---
+
+#### Stop All Zones
+
+Immediately terminate all zone and clear the running queue.
+
+<hr class="double">
+
+### Edit Options
+
+Click Footer Menu → Edit Options (or press `Alt+O`) to configure settings:
+
+#### System Settings
+
+* **Location:** Tap *Location* to open the map and search for your address; or click the pencil icon ✏️ to manually enter the GPS coordinates.
+    * **PWS location:** When using **WUnderground (WU)** as the weather data provider, you must select a **Personal Weather Station (PWS)** location.
+        1. First enter and submit a valid **WU API key** in the [Weather and Sensors]() tab.
+        2. Return to the Location setting - available PWS sites will appear as **blue dots** on the map.
+        3. Click one of the blue dots as your PWS location.
+* **Time Zone:** The timezone and DST are detected automatically based on your Location (via weather queries; requires Internet), thus this dropdown list is grayed out by default.
+    * To **override manually**, clear the Location field by tapping the cross icon ✖️ next to it – then the timezone dropdown list becomes editable.
+* **Enable Logging:** Stores log data in internal flash memory (enabled by default).
+---
+
+#### App Settings
+
+These settings are stored/cached in the app/UI. They do not affect the controller.
+
+* **Use Metric / 24-Hr Time:** Set preferred unit system (imperial or metric) and time format (12-hr or 24-hr). Defaults to automatic detection.
+* **Orders Stations by Groups / Names:** Customize how zones are sorted on the homepage (instead of solely by zone indices).
+* **Show Disabled:** Toggle visibility of disabled stations and programs.
+* **Show Station Number:** Display each zone’s numeric index alongside its name.
+
+---
+
+#### Configure Master
+
+This firmware supports up to **two independent masters**, each configurable as follows:
+
+* **Master Station:** Select a zone to act as a master (pump relay). Any zone can be designated. A master zone activates alongside other zones.
+* **Master On Adjustment:** Fine-tune the timing of **master activation** (`−600` to `+600` seconds, in steps of `5` seconds). Examples:
+    * `+15` → Master turns on `15` seconds **after** an associated zone starts.
+    * `-60` → Master turns on `60` seconds **before** a zone starts.
+* **Master Off Adjustment:** Similar to above but for master **deactivation** timing.
+
+---
+
+#### Station Handling
+
+* **Number of Stations:** OpenSprinkler automatically detects the **available zones** (including expanders), but users must manually configure this number - it's allowed to exceed the physical zones to include **Virtual Zones** (see [Section 3?]()). Default: `8` zones.
+* **Station Delay:** Time gap between consecutive zones (`−600` to `+600` s, in 5-second steps). Default: `0` (no delay). Examples:
+    * `+60` → The next zone starts `1` minute **after** the previous finishes.
+    * `-15` → The next zone starts `15` seconds **before** the previous ends (i.e. the two zones overlap by `15` seconds). Useful for managing water throttling issues.
+
+---
+
+#### Weather Adjustment
+
+* **Adjustment Method:** Select a weather-based adjustment method.
+    * **Manual** (default): set **% Watering** manually.
+    * Other methods calculate adjustments automatically. Detailed explanations of supported methods are available on [OpenSprinkler Support]().
+* **Adjustment Method Options:** Configure parameters for the selected method.
+* **Adjust Interval Programs using Multi-Day Average:** This option is available for **Zimmerman or ETo** methods. Enabling it allows **all interval programs** to apply the **average watering level** across the program's interval, rather than just the previous day's. For instance, a program that runs every `4` days uses the 4-day average. For programs that don't run daily, this provides more accurate adjustments that reflect all weather changes since the last run.
+    * Applies only if the **Use Weather** flag is enabled for that program.
+    * Limited by provider’s historical data (e.g. Apple = `10` days). If the interval length exceeds the available weather data, the maximum available range is used.
+    * The array of multi-day averages are shown in **System Diagnostics**.
+* **Weather Restrictions:** Available for all adjustment methods (including Manual):
+    * **Rain:** Skip watering if **Total Forecast Rain** > a set amount over a user-defined number of days (e.g. `0.5in` in the next `3` days). Setting either value to `0` disables this rule.<br>The forecast capability is limited by your selected weather provider (Apple = `10` days). If the number of forecast days exceeds the data, the maximum available range is used.
+    * **Temperature:** Skip watering if **Current Temperature** < a set value (e.g. `50°F` or `10°C`). A value of `-40` (either °F or °C) disables this rule.
+    * **California Rule:** Legacy rule that skips watering if `>0.1"` rainfall in the past `48` hours.
+    * **Active weather restrictions** appear both on the homepage and in System Diagnostics.
+
+* **Weather Data Provider:** Choose preferred data provider. Default: **Apple**.
+    * If the provider requires an API key, a key input box appears.
+    * Some providers have region limits (e.g. **DWD** = Germany only; **WU** requires PWS location).
+* **% Watering:** Global scaling factor applied to water times. Default: `100%`.
+    * Editable only for **Manual** adjustment method (as others calculate this automatically).
+    * Example: `75%` → Multiply all station water times by 0.75.
+    * Applies only to programs where the **Use Weather** flag is enabled.
+
+---
+
+#### Sensor Setup
+
+OpenSprinkler supports **two independent sensors** (`SN1`, `SN2`) with configurable types: **Rain**, **Soil** (binary output only), **Program Switch**, and **Flow** (*currently only supported on `SN1`*).
+
+* **Connections:**
+    * The sensor's **two signal wires** should be connected to **SN1 + GND** (or **SN2 + GND**).
+    * Do **<u>NOT</u>** connect any signal wire to **COM** as it may damage the controller.
+    * **If the sensor needs +5V** power (e.g. certain flow sensors), use **+5V** (VIN) port to supply it.
+    * **If the sensor needs 24VAC** power (e.g. wireless sensors), connect its **power wires** to **COM** and **GND** (AC-powered model only; DC/Latch models can NOT provide 24VAC).
+    * For OpenSprinkler v3.4: `SN3`, `SN4` are reserved for future use and not enabled currently.
+
+* **Rain / Soil Sensor:** Automatically stop zone runs when rain or high soil moisture detected.
+    * Choose **Normally Open** or **Normally Closed** (most common type).
+    * Only support sensors that output **binary ON/OFF signals** (dry-contact switches).
+        * For **Analog Sensors**, use an [**Analog-to-Digital Adapter**](https://opensprinkler.com/product/a2dadapter/), which converts an analog signal to ON/OFF with an adjustable threshold.
+    * **Delayed On:** Time sensor must remain active before trigger (prevents false triggers).
+    * **Delayed Off:** Hold time after sensor deactivation (prolongs sensor hold). Examples:<br>
+     10-minute Delayed On → Sensor regarded as triggered after it's active for 10 minutes.<br>
+     30-minute Delayed Off → Sensor regarded as deactivated after it's inactive for 30 minutes. 
+* **Program Switch:** Use a dry-contact switch / button to start a program.
+    * `SN1`: Starts `Program 1`
+    * `SN2`: Starts `Program 2`
+    * Activated if the switch / button is pressed for more than 1 second.
+* **Flow Sensor:** Detect flow pulses to measure **real-time flow rate** and **log total flow volume** at the end of each station run and program cycle.
+    * Support all **dry-contact, 2-wire** flow sensors (recommended).<img src="../images/flow_sensor_example.png" alt="Flow Sensor" width="150" style="float: right; margin: 5px 5px 5px 5px;" class="img-shadow">
+        * Connect the two wires to **SN1 + GND**.
+        * They are essentially reed switches that open and close repeatedly as water flows through the meter. They do not need power and the two wires have no polarity.
+    * Also support **3-wire** flow sensors that work with **+5V**.
+        * Wiring: `GND`(black) to `GND`, `5V`(red) to `+5V` (VIN), Data (yellow) to `SN1`.
+    * **Flow Pulse Rate:** can be found in the flow sensor datasheet.
+        * Used to convert flow pulse count to actual water volume.
+        * Precision is limited to **2 decimal places** (additional decimals discarded).
+        * If higher precision is needed, scale the rate by a factor of `10`.
+        * Recommend keeping `L/pulse` as the unit (even if the datasheet specifies Gallon/pulse) - the unit is for display only.
+    * Due to software implementation, the flow **click frequency** should **NOT** exceed `50Hz`, as higher frequencies may lead to inaccuracies.
+
+---
+
+#### Integration
+
+* **OTC:** Configure **OpenThings Cloud (OTC)** token for remote access. See [**OTC Support Article**](https://openthings.freshdesk.com/support/solutions/articles/5000879535).
+* **MQTT:** Configure MQTT parameters. See [**MQTT Support Article**](https://openthings.freshdesk.com/support/solutions/articles/5000859089).
+* **Email Notifications:** Configure Email settings. See [**Email Notifications Support Article**](https://openthings.freshdesk.com/support/solutions/articles/5000889759).
+* **IFTTT:** Configure IFTTT Webhooks key. See [**IFTTT Support Article**](https://openthings.freshdesk.com/support/solutions/articles/5000716372).
+* **Notification Events:** Select events that trigger MQTT/Email/IFTTT notifications.
+
+    !!! warning "Avoid Too Many Events"
+        Enabling too many events or notification methods may cause significant delays, missed responses, or even skipped short water cycles.
+
+* **Device Name:** A custom name for this controller, shown on the homepage and included in notifications messages, to help identify the controller.
+
+---
+
+#### LCD Screen
+
+* **Idle Brightness:** Set the LCD brightness when the controller is inactive.
+    * Lowering it helps extend the LCD's lifespan.
+    * Set to `0` will turn off the LCD completely when inactive.
+    * Pressing any button reactivates the LCD.
+
+---
+
+#### Advanced Settings
+
+* **HTTP Port:** Change the device's HTTP port. Default: `80`.
+* **Undercurrent Threshold:** Triggers Undercurrent notification if a zone’s current draw (`mA`) falls below this value at the end of its run (e.g., broken wire or faulty solenoid). Default: `100 mA`.
+    * The ideal value is half the typical holding current of your solenoid.
+    * Set to `0` to disable this detection.
+* **Overcurrent Limit:** Triggers Overcurrent Alert if the current draw (`mA`) **at any time** exceeds this value (e.g. due to shorted solenoids, faulty wiring, or too many zones running concurrently).
+    * If detected upon starting a zone, **the affected zone shuts off** immediately.
+    * If detected mid-run (i.e. system overcurrent), **all active zones shut off** immediately.
+    * The alert appears on LCD, UI/App, and is sent to all enabled notification channels.
+    * Once tripped, the controller can continue running programs and zones (as long as they don’t trigger overcurrent again), but the alert persists until it's cleared (by clicking the status bar message), or when the controller is rebooted.  
+    * Set to `0` to use the system default.
+    * Set to `2550` (max) to disable this feature (<span class="hl_red">**NOT recommended**</span> as disabling it exposes the controller to potential overcurrent damage).
+    * To diagnose the cause of overcurrent, perform a [**Solenoid Resistance Test**]().
+    * This feature is only available on AC/DC-powered OpenSprinkler v2.3 & v3.x (other controllers like OSPi lack current-sensing capability).
+* **Boost Time (DC/Latch models only):** Voltage-boost duration (`0-1000ms`). Default: `320ms`.
+    * Increase when using a weak/low-current DC adapter that takes more time to boost voltage.
+* **Target PD Voltage (DC v3.4 only):** Set the desired USB-C PD (Power Delivery) voltage.
+    * Set to `0` to use the system default.
+    * The **ideal value** is your solenoid's **holding current** multiplied by its **coil resistance** (e.g. `0.25 A × 30 Ω = 7.5 V`). The **holding current** is listed in the solenoid's datasheet; the **coil resistance** can be measured using a multimeter.
+    * This option is shown only when the power supply support PD, PPS, or AVS.
+    * The **Actual Voltage** (shown beneath the option name) is the closest supported voltage your adapter can provide to match the target value. 
+* **Latch On/Off Voltages (Latch model only):** Customize boost voltages for activating and deactivating latching solenoids. Maximum: `24V`. 
+* **NTP IP Address:** Custom NTP server for time sync. Set to `0.0.0.0` to use system defaults.
+* **Ignore Password:** When enabled, accepts any device password (i.e. bypass password).
+* **Special Station Auto-Refresh:** Periodically resends commands to Virtual Stations (RF/Remote/HTTP) to keep them synchronized with the main controller.
+* **NTP Sync:** Automatically syncs device time based on your Location.
+    * To **manually adjust time**, disable this option, then the Device Time becomes editable. 
+* **Use DHCP:** Automatically obtains IP from your router using DHCP.
+    * **Recommend keeping this option enabled**.
+    * If **fixed IP assignment** is preferred, use your router’s **DHCP reservation** (IP-to-Mac binding). Disable DHCP only if your router doesn't support DHCP reservation.
+    * If disabled, you MUST manually enter a **Static IP**, along with **Gateway, Subnet, DNS**. **All must be set correctly** for the controller to function properly.
+
+
+---
+
+#### Reset
+
+* **Clear Log Data:** Erase all stored logs.
+* **Reset All Options:** Restore all options back to factory defaults.
+* **Delete All Programs:** Erase all programs.
+* **Reset Station Attributes:** Restore all station settings to factory defaults.
+* **Reset Wireless** (v3 only): Reset to WiFi AP mode for re-configuring WiFi.
+
+<hr class="double">
+<img src="../images/runonce_program.png" alt="Start Zone" width="250" style="float: right; margin: 5px 5px 5px 5px;" class="img-border img-shadow">
+
+### Run-Once Program
+
+Use Footer Menu -> **Run-Once Program** (`Alt+R`) to manually start a **one-time** program. Here you can load preset run times from an existing program, quickly build a test program, or manually enter the run time for each station.
+
+* All relevant station attributes are applied (e.g. **Use Master**, **Sequential Group**, **Station Delay**, **Master On/Off Adjust**).
+* Choose whether to apply the current **% Watering**.
+* If you set the program to **Repeat**, the system auto-creates a **Single-Run Program** ([Section 7](#programs)).
+* If zones are already running, a **Scheduling Option** appears to let you choose how to queue the new program:
+    * **Append:** Run after existing zones
+    * **Insert to Front:** Run now and **pause** others
+    * **Replace:** Run now and **cancel** others
+
+<span class="hllight">**Tip 1 - Start a Program using Controller Buttons**</span>
+<br>If you need to grant someone controller access without WiFi, you can start a program on the controller **using its buttons**: Press and hold **B3** until **Run a Program** appears, tap **B3** to navigate through available programs, then press and hold **B3** to start it.
+
+<span class="hllight">**Tip 2 - Create a Manual-Only Program**</span>
+<br>You can create a program that won't run on its own but remains available for Run-Once Program and via button activation. To do so: [Create a new program](#programs) and set it as **Disabled**.
+
+<hr class="double">
+
+### Programs
+
+OpenSprinkler support up to **40 programs**. Use Footer Menu -> **Edit Programs** (`Alt+P`) to access the program list. From here you can: **Add**, **Modify**, **Copy**, **Delete**, **Run Manually**, or **Reorder** programs (using the arrow ⬆️ icon).
+
+![Programs](images/programs.jpg)
+
+#### Program Data
+
+Click **Add** ➕ in the upper-right corner to create a new program. Each program includes:
+
+<span class="hllight">**Basic Settings:**</span>
+
+* **Program Name:** Up to 32 characters. (See [Program Name Annotations]() for supported suffixes).
+* **Enabled:** Enable/disable the program.
+* **Use Weather Adjustment:** Apply weather-based adjustments, including current **% Watering**, **Weather Restrictions**, and **Multi-day Averaging** (for Interval programs only).
+* **Enable Date Range:** Restrict program operation to a date range. Examples:
+    * `05/15-09/15`: May 15 to Sep 15.
+    * `11/10-02/20`: Nov 10 to Feb 20 (of the following year).
+* **Start Time:** The first start time (e.g. `8:15 AM`). It also supports using **Sunrise** or **Sunset** times with optional offsets.
+
+<span class="hllight">**Program Type:**</span>
+
+* **Weekly:** Run on selected **weekdays**.
+* **Interval:** Run **every `N` days** (`1-128`).
+    * **Starting in:** the offset relative to today: `0` = today, `1` = tomorrow, up to `N-1`.
+    * **Multi-day Average** watering level applies to this type.
+* **Single-Run:** A **one-time** program that **auto-deletes** itself after completion.
+* **Monthly:** Run on a specific day of **each month**: `1` = 1st day, `0` = last day.
+* **Restrictions:**
+    * **Odd-day:** Run only on odd-numbered days (skips the 31st and Feb 29th).
+    * **Even-day:** Run only on even-numbered days.
+
+<span class="hllight">**Station Water Times:**</span> Set run time per station, from `1` second to `64800` seconds (18 hours).<br>Also supports using **sunrise-to-sunset** or **sunset-to-sunrise** duration as the run time.
+
+<span class="hllight">**Additional Start Times:**</span> Two options for extra start times / cycles:
+
+* **Fixed:** Up to 3 extra cycles at any specified times of the day.
+* **Repeating:** Repeat at regular intervals (e.g. every 45 minutes for 8 extra cycles).<br>Useful for splitting long watering durations into shorter cycles (*cycle and soak*).<br>
+Repeating start times may also extend overnight into the next day.
+
+---
+
+#### Program Name Annotations
+
+Program names can include annotations to customize station run order or trigger special actions.
+
+<span class="hllight">**Station Order Annotation**</span> By default a program runs stations in ascending order by index (from lowest to highest). To change this behavior, append the program name with a `>` followed by one of the following letters. 
+
+* `I`: Descending by station index (highest to lowest)
+* `n`: Ascending by station name
+* `N`: Descending by station name
+* `r`: Random order
+* `a`: Alternate ascending/descending by index
+* `A`: Alternate descending/ascending by index
+* `t`: Alternate ascending/descending by name
+* `T`: Alternate descending/ascending by name
+
+Example: A program named `Summer Garden >t` runs stations by ascending name order the first time, descending the next, and alternates each run thereafter.
+
+The [**Program Preview**](#program-preview) reflects all name annotations, allowing easy verification of intended run order. **Manual program runs** also honor these annotations.
+
+<span class="hllight">**Reboot Annotation:**</span> Special program names to trigger automatic reboots at regular intervals:
+
+* `:>reboot`: Reboot when the controller becomes idle (no zones running).
+* `:>reboot_now` Immediate reboot, regardless of zone activity.
+
+Both actions are **delayed by one minute** from the scheduled start time to prevent immediate retriggering right after the reboot. At least one zone with a non-zero duration must be included when creating the program, though it will not actually run any zones. Example: a program named `:>reboot` starting daily at `2:00 AM` will reboot the controller at that time each day. 
+
+---
+
+#### Program Preview
+
+To verify all programs are set correctly, use Menu -> **Preview Programs** to visualize them.
+
+![Program Preview](images/program_preview.jpg){: .center_wider}
+
+* **Today’s schedule** is shown by default; use the arrows ⬅️ / ➡️ to browse other days.
+* **Current time** is shown as a pink vertical line. You can **zoom** or **drag** the plot to view different time windows.
+* **Colored bars** represent each station's runtime and program name.; clicking a bar opens the corresponding program editor.
+
+
+**Simulation Accuracy:** The preview uses a simulation of the same scheduling algorithm as the controller firmware, fully accounting for settings such as **Master Zones**, **Station Delay**, **Master On/Off Adjustments**, and **Sequential Groups**.
+
+**Weather & Dynamic Events:**
+
+* **Rain Delay** and **Sensors** are ignored (they rely on real-time conditions).
+* Programs set to **Use Weather Adjustment** scale according to the current **% Watering**:
+    * **Manual:** The same **% Watering** applies to all preview days.
+    * **Zimmerman/ETo:** The current **% Watering** applies only to **today** only; all other days assume 100% (they rely on real-time conditions not predictable in advance).
+    * **Weather Restrictions** and **Multi-day Averages** apply only to **today**'s schedule.
+    * If **% Watering < 20%**, stations with calculated runtime **under 10 seconds** are skipped to avoid very short watering periods (matching firmware behavior).
+
+
+----
+
+#### Zone's Group Attribute
+
+OpenSprinkler supports both **Sequential** (one after another) and **Parallel** (concurrent) zone operations, managed by each zone’s **Sequential Group** attribute.
+
+* Zones in the **same Sequential Group** run sequentially (one at a time). If a zone is scheduled to start while another zone in the same group is already running, it will be automatically queued. This is the most common method used in most sprinkler controllers, to maintain water pressure by preventing multiple zones from running at the same time.
+
+* Zones in **different Sequential Groups** can run simultaneously (in parallel).
+Example: If Zones 1–3 are in Group `A`, and 4–6 in Group `B`, they can operate in parallel.
+
+* **Parallel Group:** Runs independently of all other zones, useful for lights, pumps, heaters or other non-sprinkler devices (which can run in parallel).
+
+<u>**NOTE**</u>: **Earlier firmwares** used a single **Sequential flag** for all zones, which effectively put all zones in a single sequential group. That flag has been replaced by the multi-group system here, which provides greater flexibility by allowing multiple independent groups.
+
+<hr class="double">
+
+### Logs
+
+OpenSprinkler supports logging, which records **Zone Activity**, **Rain Delays**, **Sensor Events**, **Flow Volumes**, and **% Watering Changes** to its internal flash. To view logs:
+
+![Logs](images/logs.png)
+
+* Use Footer Menu → **View Logs** (`Alt+L`) to display a graph of recorded data.
+* Use the **Options** tab to select a start and end date (default: last 7 days).
+<br>For large datasets or slow loading, limit the range to a single day.
+* Click **Table** at the top to switch to a tabular view.
+
+For details on the log data format and example scripts to export logs (e.g. as spreadsheets), refer to the [OpenSprinkler API documentation](221_4_api.md#18-get-log-data-jl).
 
 <hr class="double">
 
@@ -326,10 +778,46 @@ Follow the [firmware update instructions](../index.md#firmware-update-instructio
 
 ### Links and Resources
 
-* [OpenGarage Homepage](https://opengarage.io/)
-* [OpenGarage Github Repository](https://github.com/opengarage)
-* [OpenGarage Documentation](https://opengarage.github.io/OpenGarage-Firmware/)
-* [OpenGarage Blog Post](https://rayshobby.net/introducing-opengarage/)
-
+* [OpenSprinkler Homepage](https://opensprinkler.com/)
+* [OpenSprinkler Support Site](https://support.opensprinkler.com/)
+* [OpenSprinkler Documentation](https://opensprinkler.github.io/OpenSprinkler-Firmware/)
+* [OpenSprinkler Github](https://github.com/opensprinkler)
 
 <hr class="double">
+
+### Specifications
+
+|                   | OpenSprinkler v3 | OpenSprinkler Pi (OSPi) |
+|:------------------|:-----------------|:------------------------|
+|**Input Voltage:** | **AC** model: 22-28V **AC**<br>**DC/Latch**: 6V-24V **DC** | 22-28V **AC** |
+|**Power Draw:**    |0.5-0.9 W         |0.5 W + RPi's Power Draw |
+|**Num. of Zones:** |Main controller: 8;<br>Expandable to 72|Main controller: 8;<br>Expandable to 200|
+|**Solenoid Driver:**|**AC**: 1 A/zone (triac)<br>**DC**: 2 A/zone (MOSFET)<br>**Latch**: 6A instant/zone|1 A/zone (triac)|
+|**Dimensions:**    | **v3.0-3.3**: 140×56×33 mm<br>**v3.4**: 125×79×25 mm|135×105×38 mm|
+|**Weight:**        | 140 g (5 oz) | 200 g (7 oz) |
+|**Expander:**      | 130×75×25 mm / 100 g (4 oz) | 130×75×25 mm / 100 g (4 oz) |
+
+<hr class="double">
+
+### Advanced Topics
+
+#### Installing RF Transmitter
+
+OpenSprinkler supports standard 434 MHz and 315 MHz **RF (Radio Frequency) transmitters**, allowing it to control remote power sockets for switched powerline devices such as lights, heaters, fans, and pumps. To use RF stations:
+
+* Use an [**RFToy**](https://opensprinkler.com/product/rftoy/) to capture and decode the signals from your remote power sockets.
+* Each RF code is a hexadecimal string: either 25-digit (e.g. `H00003C0300003C3301490118`) or 16-digit (e.g. `51001A0100BA00AA`), that encodes the on/off commands and timing data.
+* The RFToy kit includes both 433 MHz and 315 MHz transmitter/receiver pairs — select the one that matches your remote sockets. For best range, solder a `17 cm` wire antenna to the `ANT` pin on the transmitter (straight or coiled).
+
+**Connecting the RF Transmitter:**
+
+* **OpenSprinkler v3 / OSPi v2:** Have a built-in **3-pin RF header**. Plug the RF transmitter directly into this header, with **component side up** (see [Hardware Interface Diagram](#hardware-interface)).
+<img src="../images/rf_transmitter.png" alt="RF Transmitter" width="180" style="float: right; margin: 5px 5px 5px 5px;" class="img-border img-shadow">
+* **OSPi v1:** No dedicated shrouded header, but `DATA/VIN/GND` pads are available on the PCB for soldering the transmitter to these pins.
+
+
+For detailed setup steps and examples, see the [RF Station blog post](https://opensprinkler.com/opensprinkler-firmware-2-1-1-new-feature-control-remote-power-sockets/).
+
+<br>
+<hr class="double">
+

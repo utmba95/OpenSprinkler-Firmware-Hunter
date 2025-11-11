@@ -31,7 +31,7 @@ The **About** page shows three different version numbers:
 * **Firmware** refers to the software running on the controller. Example: `2.2.1(3)`. It consists of a **dotted version** (e.g. `2.2.1`) and **build number** in parentheses. Firmware can be updated, though it is not automatic: you must manually upload a new firmware to it.
 * **App** refers to the mobile app or web UI running on your phone or browser. Example: `2.4.90`. The app/UI updates automatically on your phone when a new release is available.
 
----
+<hr class="double">
 
 ### Wiring and Solenoids
 
@@ -79,7 +79,7 @@ Same root cause as above: you likely used a **DC adapter** on an **AC-powered** 
 <span class="vsp1"></span>
 First, perform a [solenoid resistance test](#wiring-and-solenoids) to rule out solenoid or wiring faults. If readings are normal, open the controller enclosure, take a clear photo of the PCB, and check for visible damage (burn marks/discoloration, bulged components). If you’re unsure, open a support ticket and attach the photo — include your hardware/firmware versions and describe the symptoms.
 
----
+<hr class="double">
 
 ### Power and Expander
 
@@ -143,7 +143,7 @@ First confirm the expander is detected (see the question above). Note that detec
 * **Check DIP switch:** as described above. Every expander must have a unique DIP index. 
 * **Test one at a time:** Power off; remove all expanders; connect only one; power on, and verify it's detected and its zones work. Repeat for each additional expander. This helps isolate the bad expander/cable.
 
----
+<hr class="double">
 
 ### Reset and Configurations
 
@@ -199,7 +199,7 @@ At the controller's homepage, swipe left to right (or tap the upper-left menu ic
 <span class="vsp1"></span>
 See [Blank page troubleshooting](#ui-app-time-and-lcd) below. In Step 4, use the `/ja` endpoint to fetch your settings directly, and save them as a file.
 
----
+<hr class="double">
 
 ### Connectivity
 
@@ -246,7 +246,7 @@ If your controller can't connect or stay connected via wired Ethernet, try these
 <span class="vsp1"></span>
 Remote access requires using an **OpenThings Cloud (OTC) token**. To check OTC status, from the homepage, swipe left to right to open the side menu, tap **System Diagnostics**. Make sure OTC status is **Connected**. In the OpenSprinkler mobile app, use the OTC token (instead of the controller's IP address) for remote access.
 
----
+<hr class="double">
 
 ### UI, App, Time, and LCD
 
@@ -351,7 +351,7 @@ If your purchase is out of warranty: replace it with an off-the-shelf module fro
 
 To replace: power off the controller; open the enclosure; carefully unplug the existing LCD; plug in the new LCD to the same position; power on and verify.
 
----
+<hr class="double">
 
 ### OSPi Specific
 
