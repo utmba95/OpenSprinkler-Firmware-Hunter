@@ -1,7 +1,7 @@
-## Frequently Asked Questions
+## OpenSprinkler Frequently Asked Questions
 
 !!! note
-    This page covers the most common questions. For technical support, visit the [Support Portal](https://support.openthings.io) or the [Community Forums](https://opensprinkler.com/forums/).
+    This page covers the most common questions. For technical support, check the [User Manual](2.2.1/221_4_manual.md), the [Support Portal](https://support.openthings.io) or the [Community Forums](https://opensprinkler.com/forums/).
 
 ### Pre-Sales
 
@@ -336,10 +336,10 @@ OpenSprinkler v3.x is fully assembled and works out of the box. OpenSprinkler Pi
 
 **Q: Will firmware update erase my settings?**
 
-* **Dotted Version Updates**, e.g. from `2.2.0` to `2.2.1`, automatically trigger a factory reset and erase all settings.
-* **Build Number Updates**, e.g. from `2.2.1(2)` to `2.2.1(4)` preserve all settings.
+* **Dotted Version Updates**, e.g. `2.2.0` → `2.2.1`, automatically trigger a factory reset and erase all settings.
+* **Build Number Updates**, e.g. `2.2.1(2)` → `2.2.1(4)` preserve all settings.
 
-!!! info
+!!! info "Back Up Before Updating"
     Before any update, back up the current configurations so you can restore quickly if needed.
 
 ---
