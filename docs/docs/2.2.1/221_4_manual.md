@@ -10,7 +10,7 @@ The OpenSprinkler hardware comes in two flavors:
 * **OpenSprinkler Pi (OSPi)** – Powered by a Raspberry Pi (RPi), requiring some assembly (such as connecting the RPi) and firmware installation.
 
 Each controller provides 8 zones, with expansion possible via zone expanders (each adding 16 zones): **OpenSprinkler v3** supports up to **72** zones, and **OSPi** supports up to **200** zones.
-
+<a id="power-models"></a>
 In addition, OpenSprinkler v3 is available in three power models:
 
 * **AC-powered** – Comes with an <span class="hl_orange">**Orange**</span> terminal block (v3.0-3.3) or <span class="hl_red">**Red**</span> power barrel (v3.4). Requires a 24VAC transformer (NOT included by default; available for purchase as an add-on, or use your own 24VAC transformer).

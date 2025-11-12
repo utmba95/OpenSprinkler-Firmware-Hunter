@@ -23,7 +23,7 @@ OpenSprinkler is an open-source, web-based sprinkler and irrigation controller. 
 Homeowners and business owners, including growers, farms, business parks, ranches, golf courses, and sprinkler service professionals. It's also for electronics enthusiasts who like to tinker and use OpenSprinkler as a platform for their own projects. The system scales from a few zones to large multi-zone and multi-controller sites.
 
 ---
-
+<a id="hardware-versions"></a>
 **Q: What hardware versions are available?**
 <br>
 We currently offer **OpenSprinkler 3.x** (WiFi; optional wired Ethernet module) and **OpenSprinkler Pi** (OSPi, driven by Raspberry Pi). Furthermore, OpenSprinkler 3.x provides three variants:
@@ -33,8 +33,9 @@ We currently offer **OpenSprinkler 3.x** (WiFi; optional wired Ethernet module) 
 * **Latch:** Powered by a DC adapter and operates <u>latching solenoids</u> only.
 
 ---
-
+<a id="choose-models"></a>
 **Q: How do I choose between the AC/DC/Latch models?**
+
 
 * **Using a pump start relay?** Choose the AC model: it supports all 24VAC pump relays.
     * If you prefer the DC model but need to control a pump, the best option is to use a solid state relay (SSR) or DC-input relay.
@@ -120,7 +121,7 @@ You can purchase it directly from the [OpenSprinkler product page](https://opens
 
 * One OpenSprinkler controller (8 zones).
 * **AC-powered** model: 24VAC adapter **not** included by default. It can be purchased as an optional add-on (for orders shipped to North America), or you can reuse an existing sprinkler transformer (22-30VAC).
-* **DC-powered** & **Latch** models: include a universal 7.5VDC power adapter for orders shipped to North America.
+* **DC-powered** & **Latch** models: include a universal DC power adapter for orders shipped to North America.
 
 ---
 
@@ -156,7 +157,7 @@ If you are installing a new system which has no labeled wires to begin with, not
 No. For outdoor installs, use a waterproof enclosure such as [this one](https://www.amazon.com/Orbit-57095-Weather-Resistant-Outdoor-Mounted-Controller/dp/B000VYGMF2).
 
 ---
-
+<a id="supported-valves"></a>
 **Q: What valves are supported?**
 <br>
 
