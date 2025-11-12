@@ -170,7 +170,7 @@ enum {
 #define OVERCURRENT_INRUSH_EXTRA   600 // in mA, extra margin for inrush
 #define OVERCURRENT_DC_EXTRA      1200 // in mA, extra margin for DC controller
 #define DEFAULT_LATCH_BOOST_VOLTAGE  9 // default latch boost voltage in volt
-#define DEFAULT_TARGET_PD_VOLTAGE   78 // default target voltage (unit: 100mV, so 78 means 7800mV ot 7.8V)
+#define DEFAULT_TARGET_PD_VOLTAGE   75 // default target voltage (unit: 100mV, so 75 means 7500mV ot 7.5V)
 
 #if (defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega1284__))
 	#define OS_AVR

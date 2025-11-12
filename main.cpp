@@ -711,10 +711,7 @@ void do_loop()
 				otf->loop();
 				connecting_timeout = 0;
 			} else {
-				// todo: better handling of WiFi disconnection
-				DEBUG_PRINTLN(F("WiFi disconnected, going back to initial"));
-				os.state = OS_STATE_INITIAL;
-				WiFi.disconnect(true);
+				// WiFi disconnected, ESP8266 will handle re-connect
 			}
 		}
 		break;
