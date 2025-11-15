@@ -475,10 +475,10 @@ static const char months_str[] PROGMEM =
 	"Dec\0";
 
 #if !defined(ARDUINO)
-static inline int32_t now() {
+static inline uint32_t now() {
 	time_t rawtime;
 	time(&rawtime);
-	return rawtime;
+	return (uint32_t)rawtime;
 }
 #endif
 /** Calculate local time (UTC time plus time zone offset) */

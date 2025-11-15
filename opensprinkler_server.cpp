@@ -1167,9 +1167,9 @@ void server_json_programs_main(OTF_PARAMS_DEF) {
 		bfill.emit_p(PSTR("$D],["), prog.starttimes[i]);	// this is the last element
 		// station water time
 		for (i=0; i<os.nstations-1; i++) {
-			bfill.emit_p(PSTR("$L,"),(unsigned long)prog.durations[i]);
+			bfill.emit_p(PSTR("$L,"),(uint32_t)prog.durations[i]);
 		}
-		bfill.emit_p(PSTR("$L],\""),(unsigned long)prog.durations[i]); // this is the last element
+		bfill.emit_p(PSTR("$L],\""),(uint32_t)prog.durations[i]); // this is the last element
 		// program name
 		strncpy(tmp_buffer, prog.name, PROGRAM_NAME_SIZE);
 		tmp_buffer[PROGRAM_NAME_SIZE] = 0;	// make sure the string ends
@@ -1229,19 +1229,19 @@ void server_json_controller_main(OTF_PARAMS_DEF) {
 	bfill.emit_p(PSTR("\"devt\":$L,\"nbrd\":$D,\"en\":$D,\"sn1\":$D,\"sn2\":$D,\"rd\":$D,\"rdst\":$L,"
 										"\"sunrise\":$D,\"sunset\":$D,\"eip\":$L,\"lwc\":$L,\"lswc\":$L,"
 										"\"lupt\":$L,\"lrbtc\":$D,\"lrun\":[$D,$D,$D,$L],\"pq\":$D,\"pt\":$L,\"nq\":$D,\"ocs\":$D,"),
-							curr_time,
+							(uint32_t)curr_time,
 							os.nboards,
 							os.status.enabled,
 							os.status.sensor1_active,
 							os.status.sensor2_active,
 							os.status.rain_delayed,
-							os.nvdata.rd_stop_time,
+							(uint32_t)os.nvdata.rd_stop_time,
 							os.nvdata.sunrise_time,
 							os.nvdata.sunset_time,
 							os.nvdata.external_ip,
-							os.checkwt_lasttime,
-							os.checkwt_success_lasttime,
-							os.powerup_lasttime,
+							(uint32_t)os.checkwt_lasttime,
+							(uint32_t)os.checkwt_success_lasttime,
+							(uint32_t)os.powerup_lasttime,
 							os.last_reboot_cause,
 							pd.lastrun.station,
 							pd.lastrun.program,
@@ -1324,7 +1324,7 @@ void server_json_controller_main(OTF_PARAMS_DEF) {
 			if(rem>65535) rem = 0;
 		}
 		bfill.emit_p(PSTR("[$D,$L,$L,$D]"),
-		(qid<255)?q->pid:0, rem, (qid<255)?q->st:0, os.attrib_grp[sid]);
+		(qid<255)?q->pid:0, (uint32_t)rem, (uint32_t)((qid<255)?q->st:0), os.attrib_grp[sid]);
 		bfill.emit_p((sid<os.nstations-1)?PSTR(","):PSTR("]"));
 	}
 
@@ -2135,7 +2135,7 @@ void server_json_debug(OTF_PARAMS_DEF) {
 #endif
 	bfill.emit_p(PSTR("{\"date\":\"$S\",\"time\":\"$S\",\"heap\":$L"), __DATE__, __TIME__,
 #if defined(ESP8266)
-	(unsigned long)ESP.getFreeHeap());
+	ESP.getFreeHeap());
 	FSInfo fs_info;
 	LittleFS.info(fs_info);
 	bfill.emit_p(PSTR(",\"flash\":$D,\"used\":$D,\"devip\":\"$S\","), fs_info.totalBytes, fs_info.usedBytes, (useEth?eth.localIP():WiFi.localIP()).toString().c_str());
@@ -2162,7 +2162,7 @@ void server_json_debug(OTF_PARAMS_DEF) {
 	}
 */
 #else
-	(unsigned long)freeHeap());
+	(uint32_t)freeHeap());
 	bfill.emit_p(PSTR("}"));
 #endif
 	handle_return(HTML_OK);
