@@ -32,7 +32,7 @@ Supports **OTA (over-the-air)** updates - you can upload a firmware directly via
 
 * **Blank Homepage:** If the device homepage is blank or showing an error, and you need to export configuration before updating, see [Blank Page Troubleshooting](troubleshooting.md#ui-app-time-and-lcd).
 * **Update via Wired Ethernet:** If your controller is connected via wired Ethernet:
-    * If it runs firmware `2.2.0` or newer, follow the same stesps as WiFi.
+    * If it runs firmware `2.2.0` or newer, follow the same steps as WiFi.
     * If it runs `2.1.9` or earlier, update must be done in WiFi mode:
         1. Power off the controller.
         2. Remove the Ethernet module.
